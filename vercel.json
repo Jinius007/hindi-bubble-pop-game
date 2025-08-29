@@ -44,6 +44,5 @@
       ]
     }
   ],
-  "functions": {},
   "regions": ["bom1", "cdg1", "iad1", "sfo1"]
 }
