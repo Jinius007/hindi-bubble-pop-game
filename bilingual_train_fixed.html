@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚂 Bilingual Train of Thought</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #10b981, #059669);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .game-container {
+            width: 100vw;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #1f2937;
+            color: white;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: #374151;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px;
+            background: #374151;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #4b5563;
+        }
+
+        .game-area {
+            position: relative;
+            background: #22c55e;
+            overflow: hidden;
+            height: 500px;
+            min-height: 400px;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 30;
+        }
+
+        .overlay-content {
+            text-align: center;
+            color: white;
+        }
+
+        .overlay h2 {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .overlay p {
+            margin-bottom: 16px;
+        }
+
+        .start-btn {
+            padding: 12px 32px;
+            background: #3b82f6;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+
+        .start-btn:hover {
+            background: #2563eb;
+        }
+
+        .feedback {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fbbf24;
+            color: black;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 20;
+        }
+
+        .track {
+            position: absolute;
+            height: 8px;
+            background: #16a34a;
+            border-radius: 4px;
+            left: 20px;
+            width: calc(100vw - 40px);
+        }
+
+        .connecting-track {
+            position: absolute;
+            background: #16a34a;
+            border-radius: 4px;
+        }
+
+        .junction {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #16a34a;
+            border: 2px solid #15803d;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            transition: background-color 0.2s;
+        }
+
+        .junction:hover {
+            background: #22c55e;
+        }
+
+        .junction-symbol {
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .destination {
+            position: absolute;
+            width: 96px;
+            height: 48px;
+            border-radius: 8px;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translate(-50%, -50%);
+        }
+
+        .token {
+            position: absolute;
+            width: 80px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            transform: translate(-50%, -50%);
+            transition: all 0.075s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions {
+            padding: 20px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .instructions h3 {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .instructions p {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .instructions h4 {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #fbbf24;
+        }
+
+        /* Instructions Overlay Styles */
+        .instructions-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .instructions-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .instructions-content h2 {
+            color: #22c55e;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions-grid {
+            margin-bottom: 30px;
+        }
+
+        .instruction-section h3 {
+            color: #1f2937;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .instruction-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .instruction-column h4 {
+            color: #fbbf24;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .instruction-column ul {
+            text-align: left;
+            list-style: none;
+            padding: 0;
+        }
+
+        .instruction-column li {
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Instructions Button Styles */
+        .instructions-button-container {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin: 20px;
+        }
+
+        .instructions-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .instructions-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+
+        /* Instructions Modal Styles */
+        .instructions-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .instructions-modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .stats {
+                justify-content: center;
+            }
+            
+            .game-area {
+                height: 300px;
+            }
+            
+            .track {
+                width: 90%;
+            }
+            
+            .instructions {
+                padding: 15px;
+                margin-top: 15px;
+            }
+            
+            .instructions .grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+            }
+            
+            .instructions h3 {
+                font-size: 1.1rem;
+                margin-bottom: 12px;
+            }
+            
+            .instructions h4 {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+            
+            .instructions p {
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .instructions-content {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .instructions-content h2 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+
+            .instruction-columns {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .instruction-column li {
+                font-size: 13px;
+                margin-bottom: 10px;
+            }
+
+            .instructions-btn {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+
+            .instructions-modal-content {
+                margin: 10% auto;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">🚂 द्विभाषी ट्रेन / Bilingual Train</div>
+            <div class="stats">
+                <div class="stat">TIME <span id="timeLeft">6:00</span></div>
+                <div class="stat">WORDS CHANGE <span id="wordChangeTimer">1:30</span></div>
+                <div class="stat">CORRECT <span id="correctMatches">0</span>/<span id="requiredMatches">6</span></div>
+                <div class="stat">SCORE <span id="score">0</span></div>
+            </div>
+            <div class="controls">
+                <button class="btn" id="pauseBtn" onclick="togglePause()">⏸️</button>
+                <button class="btn" id="resetBtn" onclick="resetGame()">🔄</button>
+            </div>
+        </div>
+
+        <!-- Instructions First -->
+        <div class="instructions-overlay" id="instructionsOverlay">
+            <div class="instructions-content">
+                <h2>🚂 द्विभाषी ट्रेन / Bilingual Train</h2>
+                <div class="instructions-grid">
+                    <div class="instruction-section">
+                        <h3>🎮 How to Play / कैसे खेलें:</h3>
+                        <div class="instruction-columns">
+                            <div class="instruction-column">
+                                <h4>English:</h4>
+                                <ul>
+                                    <li>🎯 Click junction circles to change direction: → (straight), ↑ (up track), ↓ (down track)</li>
+                                    <li>🚂 Guide Hindi tokens through the interconnected tracks to their English destinations</li>
+                                    <li>📚 Word sets change automatically every 40 seconds</li>
+                                    <li>⏱️ Get 6 correct matches to advance to the next level!</li>
+                                </ul>
+                            </div>
+                            <div class="instruction-column">
+                                <h4>हिंदी:</h4>
+                                <ul>
+                                    <li>🎯 दिशा बदलने के लिए जंक्शन सर्कल पर क्लिक करें: → (सीधा), ↑ (ऊपर ट्रैक), ↓ (नीचे ट्रैक)</li>
+                                    <li>🚂 हिंदी टोकन्स को जुड़े हुए ट्रैक्स के माध्यम से उनके अंग्रेजी गंतव्य तक पहुंचाएं</li>
+                                    <li>📚 शब्द सेट हर 40 सेकंड में स्वचालित रूप से बदलते हैं</li>
+                                    <li>⏱️ अगले स्तर तक पहुंचने के लिए 6 सही मैच प्राप्त करें!</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="start-btn" onclick="startGame()">
+                    ▶️ Start Game / खेल शुरू करें
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div class="game-area" id="gameArea" style="display: none;">
+            <!-- Menu Overlay -->
+            <div class="overlay" id="menuOverlay">
+                <div class="overlay-content">
+                    <h2>🚂 द्विभाषी ट्रेन / Bilingual Train</h2>
+                    <p>हिंदी टोकन्स को अंग्रेजी गंतव्य तक पहुंचाएं! / Guide Hindi tokens to English destinations!</p>
+                    <p style="font-size: 14px;">चुनौतीपूर्ण हिंदी शब्दावली के साथ! / Now featuring challenging Hindi vocabulary!</p>
+                    <button class="start-btn" onclick="startGame()">
+                        ▶️ Start Game / खेल शुरू करें
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pause Overlay -->
+            <div class="overlay" id="pauseOverlay" style="display: none;">
+                <div class="overlay-content">
+                    <h2>Paused</h2>
+                    <button class="start-btn" onclick="togglePause()">Resume</button>
+                </div>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div class="overlay" id="gameOverOverlay" style="display: none;">
+                <div class="overlay-content">
+                    <h2>Time's Up!</h2>
+                    <p>Final Score: <span id="finalScore">0</span></p>
+                    <p>Level Reached: <span id="finalLevel">1</span></p>
+                    <button class="start-btn" onclick="startGame()">Play Again</button>
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div class="feedback" id="feedback" style="display: none;"></div>
+
+            <!-- Tracks -->
+            <div class="track" style="top: 25%;"></div>
+            <div class="track" style="top: 45%;"></div>
+            <div class="track" style="top: 65%;"></div>
+        </div>
+
+        <!-- Instructions Button -->
+        <div class="instructions-button-container">
+            <button class="instructions-btn" onclick="showInstructions()">
+                📖 Show Instructions / निर्देश दिखाएं
+            </button>
+        </div>
+
+        <!-- Instructions Modal -->
+        <div class="instructions-modal" id="instructionsModal">
+            <div class="instructions-modal-content">
+                <span class="close-btn" onclick="hideInstructions()">&times;</span>
+                <h2>🚂 द्विभाषी ट्रेन / Bilingual Train</h2>
+                <div class="instructions-grid">
+                    <div class="instruction-section">
+                        <h3>🎮 How to Play / कैसे खेलें:</h3>
+                        <div class="instruction-columns">
+                            <div class="instruction-column">
+                                <h4>English:</h4>
+                                <ul>
+                                    <li>🎯 Click junction circles to change direction: → (straight), ↑ (up track), ↓ (down track)</li>
+                                    <li>🚂 Guide Hindi tokens through the interconnected tracks to their English destinations</li>
+                                    <li>📚 Word sets change automatically every 40 seconds</li>
+                                    <li>⏱️ Get 6 correct matches to advance to the next level!</li>
+                                </ul>
+                            </div>
+                            <div class="instruction-column">
+                                <h4>हिंदी:</h4>
+                                <ul>
+                                    <li>🎯 दिशा बदलने के लिए जंक्शन सर्कल पर क्लिक करें: → (सीधा), ↑ (ऊपर ट्रैक), ↓ (नीचे ट्रैक)</li>
+                                    <li>🚂 हिंदी टोकन्स को जुड़े हुए ट्रैक्स के माध्यम से उनके अंग्रेजी गंतव्य तक पहुंचाएं</li>
+                                    <li>📚 शब्द सेट हर 40 सेकंड में स्वचालित रूप से बदलते हैं</li>
+                                    <li>⏱️ अगले स्तर तक पहुंचने के लिए 6 सही मैच प्राप्त करें!</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = 'menu';
+        let score = 0;
+        let level = 1;
+        let timeLeft = 360;
+        let tokens = [];
+        let destinations = [];
+        let junctions = {};
+        let currentPairs = [];
+        let correctMatches = 0;
+        let wordSetIndex = 0;
+        let wordChangeTimer = 40; // Changed from 90 to 40 seconds
+        let lastTokenTime = 0;
+        let gameInterval;
+        let spawnInterval;
+
+        // Base speed for trains - will increase with level
+        const BASE_TRAIN_SPEED = 0.08; // Reduced base speed for better readability
+        const SPEED_INCREASE_PER_LEVEL = 0.01; // Reduced speed increase per level
+        const MAX_TRAIN_SPEED = 0.18; // Reduced maximum speed limit
+
+        // Consistent color for all trains (not matching destinations)
+        const TRAIN_COLOR = '#1f2937'; // Dark gray color for all trains
+
+        // Enhanced word pairs database
+        const wordPairs = [
+            { hindi: 'अध्ययन', english: 'study', color: '#ef4444' },
+            { hindi: 'व्यवसाय', english: 'business', color: '#22c55e' },
+            { hindi: 'स्वास्थ्य', english: 'health', color: '#3b82f6' },
+            { hindi: 'न्यायालय', english: 'court', color: '#f59e0b' },
+            { hindi: 'सरकार', english: 'government', color: '#8b5cf6' },
+            { hindi: 'शिक्षा', english: 'education', color: '#06b6d4' },
+            { hindi: 'अनुसंधान', english: 'research', color: '#f97316' },
+            { hindi: 'प्रशासन', english: 'administration', color: '#84cc16' },
+            { hindi: 'संविधान', english: 'constitution', color: '#ec4899' },
+            { hindi: 'अर्थव्यवस्था', english: 'economy', color: '#6366f1' },
+            { hindi: 'प्रौद्योगिकी', english: 'technology', color: '#14b8a6' },
+            { hindi: 'संस्कृति', english: 'culture', color: '#f43f5e' }
+        ];
+
+        function generateLevel() {
+            const selectedPairs = wordPairs.slice(wordSetIndex, wordSetIndex + 3);
+            currentPairs = selectedPairs;
+            
+            // Adjust positions based on screen size
+            const gameArea = document.getElementById('gameArea');
+            const gameWidth = gameArea.clientWidth;
+            const gameHeight = gameArea.clientHeight;
+            
+            const positions = [
+                { x: gameWidth - 100, y: gameHeight * 0.15 },
+                { x: gameWidth - 80, y: gameHeight * 0.45 },
+                { x: gameWidth - 120, y: gameHeight * 0.75 }
+            ];
+            
+            destinations = selectedPairs.map((pair, index) => ({
+                id: index,
+                english: pair.english,
+                color: pair.color,
+                x: positions[index].x,
+                y: positions[index].y
+            }));
+
+            // Create junctions - scale with screen width
+            junctions = {};
+            const trackY = [gameHeight * 0.25, gameHeight * 0.45, gameHeight * 0.65];
+            const junctionSpacing = (gameWidth - 200) / 4;
+            const junctionPoints = [
+                200, 
+                200 + junctionSpacing, 
+                200 + junctionSpacing * 2, 
+                200 + junctionSpacing * 3
+            ];
+            
+            junctionPoints.forEach((x, jIndex) => {
+                trackY.forEach((y, trackIndex) => {
+                    const junctionId = `${trackIndex}-${jIndex}`;
+                    junctions[junctionId] = {
+                        id: junctionId,
+                        x: x,
+                        y: y,
+                        currentDirection: 0,
+                        possibleDirections: []
+                    };
+                    
+                    const directions = ['straight'];
+                    if (trackIndex > 0) directions.push('up');
+                    if (trackIndex < trackY.length - 1) directions.push('down');
+                    
+                    junctions[junctionId].possibleDirections = directions;
+                });
+            });
+            
+            renderJunctions();
+            renderDestinations();
+        }
+
+        function startGame() {
+            gameState = 'playing';
+            score = 0;
+            level = 1;
+            timeLeft = 360;
+            correctMatches = 0;
+            wordSetIndex = 0;
+            wordChangeTimer = 40;
+            lastTokenTime = 0;
+            tokens = [];
+            
+            document.getElementById('instructionsOverlay').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+            document.getElementById('menuOverlay').style.display = 'none';
+            document.getElementById('pauseOverlay').style.display = 'none';
+            document.getElementById('gameOverOverlay').style.display = 'none';
+            
+            generateLevel();
+            updateUI();
+            startGameLoop();
+            startTokenSpawning();
+        }
+
+        function showInstructions() {
+            document.getElementById('instructionsModal').style.display = 'block';
+        }
+
+        function hideInstructions() {
+            document.getElementById('instructionsModal').style.display = 'none';
+        }
+
+        function togglePause() {
+            if (gameState === 'playing') {
+                gameState = 'paused';
+                document.getElementById('pauseOverlay').style.display = 'flex';
+                clearInterval(gameInterval);
+                clearInterval(spawnInterval);
+            } else if (gameState === 'paused') {
+                gameState = 'playing';
+                document.getElementById('pauseOverlay').style.display = 'none';
+                startGameLoop();
+                startTokenSpawning();
+            }
+        }
+
+        function resetGame() {
+            gameState = 'menu';
+            clearInterval(gameInterval);
+            clearInterval(spawnInterval);
+            document.getElementById('instructionsOverlay').style.display = 'flex';
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('menuOverlay').style.display = 'none';
+            document.getElementById('pauseOverlay').style.display = 'none';
+            document.getElementById('gameOverOverlay').style.display = 'none';
+            clearTokens();
+            clearJunctions();
+            clearDestinations();
+        }
+
+        function startGameLoop() {
+            gameInterval = setInterval(() => {
+                if (gameState !== 'playing') return;
+                
+                timeLeft--;
+                wordChangeTimer--;
+                
+                if (timeLeft <= 0) {
+                    gameState = 'gameOver';
+                    document.getElementById('finalScore').textContent = score;
+                    document.getElementById('finalLevel').textContent = level;
+                    document.getElementById('gameOverOverlay').style.display = 'flex';
+                    clearInterval(gameInterval);
+                    clearInterval(spawnInterval);
+                    return;
+                }
+                
+                if (wordChangeTimer <= 0) {
+                    wordSetIndex = (wordSetIndex + 3) % wordPairs.length;
+                    if (wordSetIndex + 3 > wordPairs.length) {
+                        wordSetIndex = 0;
+                    }
+                    
+                    // Clear tokens that are still moving
+                    tokens = tokens.filter(token => !token.moving || token.x > 400);
+                    renderTokens();
+                    
+                    showFeedback('New words incoming! 📚');
+                    wordChangeTimer = 40;
+                    generateLevel();
+                }
+                
+                moveTokens();
+                updateUI();
+            }, 1000);
+        }
+
+        function startTokenSpawning() {
+            // Balanced spawn delay for good gameplay pace
+            const spawnDelay = 3000; // Increased to 3 seconds for better readability
+            spawnInterval = setInterval(() => {
+                if (gameState === 'playing') {
+                    generateToken();
+                }
+            }, spawnDelay);
+        }
+
+        function generateToken() {
+            if (currentPairs.length === 0) return;
+            
+            const pair = currentPairs[Math.floor(Math.random() * currentPairs.length)];
+            const startTrack = Math.floor(Math.random() * 3);
+            
+            const gameArea = document.getElementById('gameArea');
+            const gameHeight = gameArea.clientHeight;
+            const trackPositions = [gameHeight * 0.25, gameHeight * 0.45, gameHeight * 0.65];
+            
+            const newToken = {
+                id: Date.now() + Math.random(),
+                hindi: pair.hindi,
+                english: pair.english,
+                color: TRAIN_COLOR, // Use consistent color
+                x: 50,
+                y: trackPositions[startTrack],
+                currentTrack: startTrack,
+                moving: true,
+                speed: Math.min(BASE_TRAIN_SPEED + (level - 1) * SPEED_INCREASE_PER_LEVEL, MAX_TRAIN_SPEED), // Progressive speed with cap
+                spawnTime: Date.now()
+            };
+            
+            tokens.push(newToken);
+            renderTokens();
+        }
+
+        function moveTokens() {
+            const moveInterval = setInterval(() => {
+                if (gameState !== 'playing') {
+                    clearInterval(moveInterval);
+                    return;
+                }
+                
+                tokens = tokens.map(token => {
+                    if (!token.moving) return token;
+                    
+                    // Ensure speed remains constant with level-based progression and cap
+                    token.speed = Math.min(BASE_TRAIN_SPEED + (level - 1) * SPEED_INCREASE_PER_LEVEL, MAX_TRAIN_SPEED);
+                    
+                    let newX = token.x + token.speed;
+                    let newY = token.y;
+                    
+                    // Check junction interactions
+                    const gameHeight = document.getElementById('gameArea').clientHeight;
+                    const trackSpacing = gameHeight * 0.2;
+                    
+                    Object.values(junctions).forEach(junction => {
+                        if (Math.abs(newX - junction.x) < 15 && Math.abs(token.y - junction.y) < 15) {
+                            const direction = junction.possibleDirections[junction.currentDirection];
+                            if (direction === 'up' && token.y > gameHeight * 0.25) {
+                                newY = token.y - trackSpacing;
+                            } else if (direction === 'down' && token.y < gameHeight * 0.65) {
+                                newY = token.y + trackSpacing;
+                            }
+                        }
+                    });
+                    
+                    // Check if reached any destination
+                    const reachedDestination = destinations.find(dest => 
+                        Math.abs(newX - dest.x) < 40 && Math.abs(newY - dest.y) < 40
+                    );
+                    
+                    if (reachedDestination) {
+                        if (reachedDestination.english === token.english) {
+                            score += 15;
+                            correctMatches++;
+                            showFeedback(`Correct! ${token.hindi} → ${token.english} (+15)`);
+                            return { ...token, moving: false, success: true };
+                        } else {
+                            showFeedback(`Wrong! ${token.hindi} ≠ ${reachedDestination.english}`);
+                            return { ...token, moving: false, success: false };
+                        }
+                    }
+                    
+                    // Remove tokens that go off screen
+                    const gameWidth = document.getElementById('gameArea').clientWidth;
+                    if (newX > gameWidth) {
+                        return { ...token, moving: false };
+                    }
+                    
+                    return { ...token, x: newX, y: newY };
+                }).filter(token => token.moving);
+                
+                renderTokens();
+                
+                // Check level progression
+                const requiredMatches = 6 + (level * 2);
+                if (correctMatches >= requiredMatches) {
+                    level++;
+                    correctMatches = 0;
+                    showFeedback(`Level ${level}! More trains coming!`);
+                    updateUI();
+                }
+            }, 80); // Increased from 50ms to 80ms for better readability and reaction time
+        }
+
+        function toggleJunction(junctionId) {
+            if (gameState !== 'playing') return;
+            
+            const junction = junctions[junctionId];
+            junction.currentDirection = (junction.currentDirection + 1) % junction.possibleDirections.length;
+            renderJunctions();
+        }
+
+        function renderJunctions() {
+            clearJunctions();
+            const gameArea = document.getElementById('gameArea');
+            const gameHeight = gameArea.clientHeight;
+            const trackSpacing = gameHeight * 0.2;
+            
+            // Add connecting tracks
+            Object.values(junctions).forEach(junction => {
+                const middleTrackY = gameHeight * 0.45;
+                const topTrackY = gameHeight * 0.25;
+                const bottomTrackY = gameHeight * 0.65;
+                
+                if (Math.abs(junction.y - middleTrackY) < 10) { // middle track
+                    // Up connector
+                    const upTrack = document.createElement('div');
+                    upTrack.className = 'connecting-track';
+                    upTrack.style.left = (junction.x - 1) + 'px';
+                    upTrack.style.top = (junction.y - trackSpacing) + 'px';
+                    upTrack.style.width = '2px';
+                    upTrack.style.height = trackSpacing + 'px';
+                    gameArea.appendChild(upTrack);
+                    
+                    // Down connector
+                    const downTrack = document.createElement('div');
+                    downTrack.className = 'connecting-track';
+                    downTrack.style.left = (junction.x - 1) + 'px';
+                    downTrack.style.top = junction.y + 'px';
+                    downTrack.style.width = '2px';
+                    downTrack.style.height = trackSpacing + 'px';
+                    gameArea.appendChild(downTrack);
+                } else if (Math.abs(junction.y - topTrackY) < 10) { // top track
+                    const downTrack = document.createElement('div');
+                    downTrack.className = 'connecting-track';
+                    downTrack.style.left = (junction.x - 1) + 'px';
+                    downTrack.style.top = junction.y + 'px';
+                    downTrack.style.width = '2px';
+                    downTrack.style.height = trackSpacing + 'px';
+                    gameArea.appendChild(downTrack);
+                } else if (Math.abs(junction.y - bottomTrackY) < 10) { // bottom track
+                    const upTrack = document.createElement('div');
+                    upTrack.className = 'connecting-track';
+                    upTrack.style.left = (junction.x - 1) + 'px';
+                    upTrack.style.top = (junction.y - trackSpacing) + 'px';
+                    upTrack.style.width = '2px';
+                    upTrack.style.height = trackSpacing + 'px';
+                    gameArea.appendChild(upTrack);
+                }
+            });
+            
+            Object.values(junctions).forEach(junction => {
+                const junctionEl = document.createElement('button');
+                junctionEl.className = 'junction';
+                junctionEl.style.left = junction.x + 'px';
+                junctionEl.style.top = junction.y + 'px';
+                junctionEl.onclick = () => toggleJunction(junction.id);
+                
+                const symbol = document.createElement('div');
+                symbol.className = 'junction-symbol';
+                const direction = junction.possibleDirections[junction.currentDirection];
+                symbol.textContent = direction === 'up' ? '↑' : direction === 'down' ? '↓' : '→';
+                junctionEl.appendChild(symbol);
+                
+                gameArea.appendChild(junctionEl);
+            });
+        }
+
+        function renderDestinations() {
+            clearDestinations();
+            destinations.forEach(dest => {
+                const destEl = document.createElement('div');
+                destEl.className = 'destination';
+                destEl.style.left = dest.x + 'px';
+                destEl.style.top = dest.y + 'px';
+                destEl.style.backgroundColor = dest.color;
+                destEl.textContent = dest.english;
+                document.getElementById('gameArea').appendChild(destEl);
+            });
+        }
+
+        function renderTokens() {
+            clearTokens();
+            tokens.forEach(token => {
+                const tokenEl = document.createElement('div');
+                tokenEl.className = 'token';
+                tokenEl.style.left = token.x + 'px';
+                tokenEl.style.top = token.y + 'px';
+                tokenEl.style.backgroundColor = token.color;
+                tokenEl.textContent = token.hindi;
+                document.getElementById('gameArea').appendChild(tokenEl);
+            });
+        }
+
+        function clearJunctions() {
+            const junctions = document.querySelectorAll('.junction, .connecting-track');
+            junctions.forEach(junction => junction.remove());
+        }
+
+        function clearDestinations() {
+            const destinations = document.querySelectorAll('.destination');
+            destinations.forEach(dest => dest.remove());
+        }
+
+        function clearTokens() {
+            const tokens = document.querySelectorAll('.token');
+            tokens.forEach(token => token.remove());
+        }
+
+        function showFeedback(message) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.style.display = 'block';
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 1500);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateUI() {
+            document.getElementById('timeLeft').textContent = formatTime(timeLeft);
+            document.getElementById('wordChangeTimer').textContent = formatTime(wordChangeTimer);
+            document.getElementById('correctMatches').textContent = correctMatches;
+            document.getElementById('requiredMatches').textContent = 6 + (level * 2);
+            document.getElementById('score').textContent = score;
+            document.getElementById('requiredMatchesText').textContent = 6 + (level * 2);
+        }
+
+        // Initialize the game
+        updateUI();
+    </script>
+</body>
+</html>

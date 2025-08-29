@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hindi Air Hockey Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #gameBoard {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: linear-gradient(45deg, #0f4c75, #3282b8);
+            border: 8px solid #fff;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            overflow: visible;
+        }
+        
+        .disc {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ff6b6b, #ee5a24);
+            border: 3px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 10;
+            transition: box-shadow 0.1s ease;
+            text-align: center;
+            line-height: 1.1;
+            padding: 2px;
+        }
+        
+        .disc:hover {
+            box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+        }
+        
+        .peg {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #ffd700, #ffb347);
+            border: 3px solid #fff;
+            border-radius: 50%;
+            cursor: grab;
+            z-index: 15;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .peg:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        
+        .hole {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #2c3e50, #34495e);
+            border: 4px solid #ecf0f1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ecf0f1;
+            font-weight: bold;
+            font-size: 11px;
+            text-align: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            z-index: 5;
+            padding: 4px;
+            line-height: 1.1;
+        }
+        
+        .score-panel {
+            position: absolute;
+            top: 50%;
+            left: -200px;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            z-index: 100;
+            border: 2px solid #fff;
+            min-width: 150px;
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 50%;
+            right: -250px;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 220px;
+            z-index: 100;
+            border: 2px solid #fff;
+        }
+        
+        .trail {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #ffd700;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Debug borders to make elements more visible */
+        .debug-border {
+            border: 2px dashed #ff0000 !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameBoard">
+            <div class="score-panel">
+                <div>Score: <span id="score">0</span></div>
+                <div>Level: <span id="level">1</span></div>
+            </div>
+            <div class="instructions">
+                <strong>How to Play:</strong><br>
+                • Drag the golden peg to hit discs<br>
+                • Match Hindi words to English holes<br>
+                • Avoid wrong matches (-10 points)<br>
+                • Correct matches (+20 points)
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AirHockeyGame {
+            constructor() {
+                this.gameBoard = document.getElementById('gameBoard');
+                this.boardWidth = 800;
+                this.boardHeight = 600;
+                this.score = 0;
+                this.level = 1;
+                
+                this.discs = [];
+                this.holes = [];
+                this.peg = null;
+                this.trails = [];
+                this.particles = [];
+                
+                this.pegDragging = false;
+                this.pegLastPos = { x: 0, y: 0 };
+                this.pegVelocity = { x: 0, y: 0 };
+                
+                // Hindi-English office/official word pairs
+                this.wordPairs = [
+                    { hindi: 'कार्यालय', english: 'Office' },
+                    { hindi: 'दस्तावेज़', english: 'Document' },
+                    { hindi: 'बैठक', english: 'Meeting' },
+                    { hindi: 'रिपोर्ट', english: 'Report' },
+                    { hindi: 'प्रस्ताव', english: 'Proposal' },
+                    { hindi: 'अनुमोदन', english: 'Approval' },
+                    { hindi: 'नीति', english: 'Policy' },
+                    { hindi: 'प्रक्रिया', english: 'Procedure' },
+                    { hindi: 'आवेदन', english: 'Application' },
+                    { hindi: 'सचिव', english: 'Secretary' },
+                    { hindi: 'अधिकारी', english: 'Officer' },
+                    { hindi: 'विभाग', english: 'Department' },
+                    { hindi: 'निर्देश', english: 'Instructions' },
+                    { hindi: 'अनुसूची', english: 'Schedule' },
+                    { hindi: 'समिति', english: 'Committee' }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.createPeg();
+                this.createNewRound();
+                this.startGameLoop();
+                this.bindEvents();
+                console.log('Game initialized!'); // Debug log
+            }
+            
+            createPeg() {
+                this.peg = {
+                    element: document.createElement('div'),
+                    x: this.boardWidth / 2,
+                    y: this.boardHeight - 80,
+                    vx: 0,
+                    vy: 0,
+                    radius: 20
+                };
+                
+                this.peg.element.className = 'peg';
+                this.peg.element.style.left = (this.peg.x - this.peg.radius) + 'px';
+                this.peg.element.style.top = (this.peg.y - this.peg.radius) + 'px';
+                this.peg.element.style.transform = 'translate(-50%, -50%)';
+                this.gameBoard.appendChild(this.peg.element);
+                console.log('Peg created at:', this.peg.x, this.peg.y); // Debug log
+            }
+            
+            createNewRound() {
+                this.clearDiscsAndHoles();
+                
+                // Select 4 random word pairs
+                const selectedPairs = this.shuffleArray([...this.wordPairs]).slice(0, 4);
+                console.log('Selected pairs:', selectedPairs); // Debug log
+                
+                // Create holes for English words
+                selectedPairs.forEach((pair, index) => {
+                    const hole = this.createHole(pair.english, index);
+                    this.holes.push(hole);
+                });
+                
+                // Create discs for Hindi words
+                selectedPairs.forEach((pair, index) => {
+                    const disc = this.createDisc(pair.hindi, pair.english, index);
+                    this.discs.push(disc);
+                });
+            }
+            
+            createHole(englishWord, index) {
+                const hole = {
+                    element: document.createElement('div'),
+                    word: englishWord,
+                    x: 0,
+                    y: 0,
+                    radius: 40
+                };
+                
+                hole.element.className = 'hole';
+                hole.element.textContent = englishWord;
+                
+                // Position holes around the board edges with better spacing
+                const positions = [
+                    { x: 120, y: 120 },
+                    { x: 680, y: 120 },
+                    { x: 120, y: 480 },
+                    { x: 680, y: 480 }
+                ];
+                
+                hole.x = positions[index].x;
+                hole.y = positions[index].y;
+                hole.element.style.left = (hole.x - hole.radius) + 'px';
+                hole.element.style.top = (hole.y - hole.radius) + 'px';
+                hole.element.style.transform = 'translate(-50%, -50%)';
+                
+                this.gameBoard.appendChild(hole.element);
+                console.log('Hole created:', englishWord, 'at', hole.x, hole.y); // Debug log
+                return hole;
+            }
+            
+            createDisc(hindiWord, englishWord, index) {
+                const disc = {
+                    element: document.createElement('div'),
+                    hindiWord: hindiWord,
+                    englishWord: englishWord,
+                    x: 300 + (index * 80),
+                    y: 250 + (index % 2) * 100,
+                    vx: (Math.random() - 0.5) * 1.2,
+                    vy: (Math.random() - 0.5) * 1.2,
+                    radius: 30,
+                    active: true
+                };
+                
+                disc.element.className = 'disc';
+                disc.element.textContent = hindiWord;
+                disc.element.style.left = (disc.x - disc.radius) + 'px';
+                disc.element.style.top = (disc.y - disc.radius) + 'px';
+                disc.element.style.transform = 'translate(-50%, -50%)';
+                
+                this.gameBoard.appendChild(disc.element);
+                console.log('Disc created:', hindiWord, 'at', disc.x, disc.y); // Debug log  
+                return disc;
+            }
+            
+            bindEvents() {
+                let mouseDown = false;
+                let lastMousePos = { x: 0, y: 0 };
+                
+                this.gameBoard.addEventListener('mousedown', (e) => {
+                    const rect = this.gameBoard.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    const pegDist = Math.sqrt(
+                        Math.pow(mouseX - this.peg.x, 2) + 
+                        Math.pow(mouseY - this.peg.y, 2)
+                    );
+                    
+                    if (pegDist < this.peg.radius + 15) {
+                        mouseDown = true;
+                        this.pegDragging = true;
+                        lastMousePos = { x: mouseX, y: mouseY };
+                        console.log('Started dragging peg'); // Debug log
+                    }
+                });
+                
+                this.gameBoard.addEventListener('mousemove', (e) => {
+                    if (mouseDown && this.pegDragging) {
+                        const rect = this.gameBoard.getBoundingClientRect();
+                        const mouseX = e.clientX - rect.left;
+                        const mouseY = e.clientY - rect.top;
+                        
+                        // Calculate velocity based on mouse movement
+                        this.pegVelocity.x = (mouseX - lastMousePos.x) * 0.4;
+                        this.pegVelocity.y = (mouseY - lastMousePos.y) * 0.4;
+                        
+                        // Update peg position
+                        this.peg.x = Math.max(this.peg.radius, Math.min(this.boardWidth - this.peg.radius, mouseX));
+                        this.peg.y = Math.max(this.peg.radius, Math.min(this.boardHeight - this.peg.radius, mouseY));
+                        
+                        lastMousePos = { x: mouseX, y: mouseY };
+                        
+                        // Create trail effect
+                        this.createTrail(this.peg.x, this.peg.y);
+                    }
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    if (mouseDown) {
+                        console.log('Stopped dragging peg'); // Debug log
+                    }
+                    mouseDown = false;
+                    this.pegDragging = false;
+                });
+            }
+            
+            createTrail(x, y) {
+                const trail = document.createElement('div');
+                trail.className = 'trail';
+                trail.style.left = (x - 4) + 'px';
+                trail.style.top = (y - 4) + 'px';
+                this.gameBoard.appendChild(trail);
+                
+                setTimeout(() => {
+                    if (trail.parentNode) {
+                        trail.parentNode.removeChild(trail);
+                    }
+                }, 300);
+            }
+            
+            createParticles(x, y, color = '#ffd700') {
+                for (let i = 0; i < 6; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = (x - 4) + 'px';
+                    particle.style.top = (y - 4) + 'px';
+                    particle.style.background = color;
+                    this.gameBoard.appendChild(particle);
+                    
+                    const angle = (Math.PI * 2 * i) / 6;
+                    const speed = 25;
+                    const vx = Math.cos(angle) * speed;
+                    const vy = Math.sin(angle) * speed;
+                    
+                    this.animateParticle(particle, x, y, vx, vy);
+                }
+            }
+            
+            animateParticle(particle, x, y, vx, vy) {
+                let currentX = x;
+                let currentY = y;
+                let opacity = 1;
+                
+                const animate = () => {
+                    currentX += vx * 0.1;
+                    currentY += vy * 0.1;
+                    opacity -= 0.04;
+                    
+                    particle.style.left = (currentX - 4) + 'px';
+                    particle.style.top = (currentY - 4) + 'px';
+                    particle.style.opacity = opacity;
+                    
+                    if (opacity > 0) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }
+                };
+                
+                requestAnimationFrame(animate);
+            }
+            
+            updatePhysics() {
+                // Update peg
+                if (!this.pegDragging) {
+                    this.peg.vx *= 0.95; // Friction
+                    this.peg.vy *= 0.95;
+                    this.peg.x += this.peg.vx;
+                    this.peg.y += this.peg.vy;
+                    
+                    // Boundary collision for peg
+                    if (this.peg.x < this.peg.radius || this.peg.x > this.boardWidth - this.peg.radius) {
+                        this.peg.vx *= -0.8;
+                        this.peg.x = Math.max(this.peg.radius, Math.min(this.boardWidth - this.peg.radius, this.peg.x));
+                    }
+                    if (this.peg.y < this.peg.radius || this.peg.y > this.boardHeight - this.peg.radius) {
+                        this.peg.vy *= -0.8;
+                        this.peg.y = Math.max(this.peg.radius, Math.min(this.boardHeight - this.peg.radius, this.peg.y));
+                    }
+                }
+                
+                this.peg.element.style.left = (this.peg.x - this.peg.radius) + 'px';
+                this.peg.element.style.top = (this.peg.y - this.peg.radius) + 'px';
+                
+                // Update discs
+                this.discs.forEach((disc, discIndex) => {
+                    if (!disc.active) return;
+                    
+                    // Calculate current speed to determine behavior
+                    const currentSpeed = Math.sqrt(disc.vx * disc.vx + disc.vy * disc.vy);
+                    
+                    // If disc is moving slowly (autonomous mode), add gentle floating motion
+                    if (currentSpeed < 1.0) {
+                        const time = Date.now() * 0.0002; // Much slower time for gentle floating
+                        const autonomousForce = 0.05; // Very gentle force
+                        disc.vx += Math.sin(time * 0.2 + discIndex * 1.8) * autonomousForce;
+                        disc.vy += Math.cos(time * 0.25 + discIndex * 1.3) * autonomousForce;
+                        
+                        // Apply stronger friction for autonomous movement
+                        disc.vx *= 0.985;
+                        disc.vy *= 0.985;
+                        
+                        // Keep autonomous movement very slow
+                        const maxAutonomousSpeed = 0.8;
+                        if (currentSpeed > maxAutonomousSpeed) {
+                            disc.vx = (disc.vx / currentSpeed) * maxAutonomousSpeed;
+                            disc.vy = (disc.vy / currentSpeed) * maxAutonomousSpeed;
+                        }
+                    } else {
+                        // Fast movement mode (after peg hit) - realistic physics
+                        disc.vx *= 0.998; // Less friction for realistic momentum
+                        disc.vy *= 0.998;
+                    }
+                    
+                    // Repel from corners to prevent settling
+                    const cornerRepelForce = 0.3;
+                    const cornerThreshold = 100;
+                    
+                    // Top-left corner
+                    if (disc.x < cornerThreshold && disc.y < cornerThreshold) {
+                        disc.vx += cornerRepelForce;
+                        disc.vy += cornerRepelForce;
+                    }
+                    // Top-right corner
+                    if (disc.x > this.boardWidth - cornerThreshold && disc.y < cornerThreshold) {
+                        disc.vx -= cornerRepelForce;
+                        disc.vy += cornerRepelForce;
+                    }
+                    // Bottom-left corner
+                    if (disc.x < cornerThreshold && disc.y > this.boardHeight - cornerThreshold) {
+                        disc.vx += cornerRepelForce;
+                        disc.vy -= cornerRepelForce;
+                    }
+                    // Bottom-right corner
+                    if (disc.x > this.boardWidth - cornerThreshold && disc.y > this.boardHeight - cornerThreshold) {
+                        disc.vx -= cornerRepelForce;
+                        disc.vy -= cornerRepelForce;
+                    }
+                    
+                    // Update position
+                    disc.x += disc.vx;
+                    disc.y += disc.vy;
+                    
+                    // Boundary collision with realistic bounce
+                    if (disc.x < disc.radius || disc.x > this.boardWidth - disc.radius) {
+                        disc.vx *= -0.7; // Realistic bounce damping
+                        disc.x = Math.max(disc.radius, Math.min(this.boardWidth - disc.radius, disc.x));
+                        // Add slight randomness to prevent repetitive bouncing
+                        disc.vy += (Math.random() - 0.5) * 1;
+                    }
+                    if (disc.y < disc.radius || disc.y > this.boardHeight - disc.radius) {
+                        disc.vy *= -0.7; // Realistic bounce damping
+                        disc.y = Math.max(disc.radius, Math.min(this.boardHeight - disc.radius, disc.y));
+                        // Add slight randomness to prevent repetitive bouncing
+                        disc.vx += (Math.random() - 0.5) * 1;
+                    }
+                    
+                    // Peg collision
+                    const pegDist = Math.sqrt(
+                        Math.pow(disc.x - this.peg.x, 2) + 
+                        Math.pow(disc.y - this.peg.y, 2)
+                    );
+                    
+                    if (pegDist < disc.radius + this.peg.radius) {
+                        // Calculate collision response with realistic physics
+                        const angle = Math.atan2(disc.y - this.peg.y, disc.x - this.peg.x);
+                        
+                        // Strong force for realistic bouncy physics
+                        const baseForce = 15;
+                        const velocityTransfer = 0.8; // How much peg velocity transfers to disc
+                        
+                        // Add base force in collision direction
+                        disc.vx += Math.cos(angle) * baseForce;
+                        disc.vy += Math.sin(angle) * baseForce;
+                        
+                        // Transfer peg momentum to disc
+                        disc.vx += this.pegVelocity.x * velocityTransfer;
+                        disc.vy += this.pegVelocity.y * velocityTransfer;
+                        
+                        // Separate objects to prevent sticking
+                        const overlap = (disc.radius + this.peg.radius) - pegDist;
+                        disc.x += Math.cos(angle) * (overlap + 2);
+                        disc.y += Math.sin(angle) * (overlap + 2);
+                        
+                        // Add some randomness for realistic physics
+                        disc.vx += (Math.random() - 0.5) * 2;
+                        disc.vy += (Math.random() - 0.5) * 2;
+                        
+                        this.createParticles(disc.x, disc.y, '#ff6b6b');
+                        console.log('Peg hit disc:', disc.hindiWord, 'with force'); // Debug log
+                    }
+                    
+                    // Disc-disc collision with better physics
+                    this.discs.forEach((otherDisc, otherIndex) => {
+                        if (discIndex !== otherIndex && disc.active && otherDisc.active) {
+                            const dist = Math.sqrt(
+                                Math.pow(disc.x - otherDisc.x, 2) + 
+                                Math.pow(disc.y - otherDisc.y, 2)
+                            );
+                            
+                            if (dist < disc.radius + otherDisc.radius) {
+                                const angle = Math.atan2(otherDisc.y - disc.y, otherDisc.x - disc.x);
+                                const force = 3.5;
+                                
+                                // Separate the discs first
+                                const overlap = (disc.radius + otherDisc.radius) - dist;
+                                disc.x -= Math.cos(angle) * overlap * 0.5;
+                                disc.y -= Math.sin(angle) * overlap * 0.5;
+                                otherDisc.x += Math.cos(angle) * overlap * 0.5;
+                                otherDisc.y += Math.sin(angle) * overlap * 0.5;
+                                
+                                // Apply collision forces
+                                disc.vx -= Math.cos(angle) * force;
+                                disc.vy -= Math.sin(angle) * force;
+                                otherDisc.vx += Math.cos(angle) * force;
+                                otherDisc.vy += Math.sin(angle) * force;
+                            }
+                        }
+                    });
+                    
+                    // Hole collision
+                    this.holes.forEach(hole => {
+                        const holeDist = Math.sqrt(
+                            Math.pow(disc.x - hole.x, 2) + 
+                            Math.pow(disc.y - hole.y, 2)
+                        );
+                        
+                        if (holeDist < hole.radius + disc.radius && disc.active) {
+                            disc.active = false;
+                            disc.element.style.display = 'none';
+                            
+                            if (disc.englishWord === hole.word) {
+                                // Correct match
+                                this.score += 20;
+                                this.createParticles(hole.x, hole.y, '#4CAF50');
+                                hole.element.style.borderColor = '#4CAF50';
+                                console.log('Correct match:', disc.hindiWord, '→', hole.word);
+                                setTimeout(() => {
+                                    hole.element.style.borderColor = '#ecf0f1';
+                                }, 1000);
+                            } else {
+                                // Wrong match
+                                this.score -= 10;
+                                this.createParticles(hole.x, hole.y, '#F44336');
+                                hole.element.style.borderColor = '#F44336';
+                                console.log('Wrong match:', disc.hindiWord, '→', hole.word);
+                                setTimeout(() => {
+                                    hole.element.style.borderColor = '#ecf0f1';
+                                }, 1000);
+                            }
+                            
+                            this.updateScore();
+                        }
+                    });
+                    
+                    // Update visual position
+                    disc.element.style.left = (disc.x - disc.radius) + 'px';
+                    disc.element.style.top = (disc.y - disc.radius) + 'px';
+                });
+                
+                // Check if round is complete
+                if (this.discs.every(disc => !disc.active)) {
+                    setTimeout(() => {
+                        this.level++;
+                        this.updateLevel();
+                        this.createNewRound();
+                        console.log('Starting level:', this.level);
+                    }, 1500);
+                }
+            }
+            
+            updateScore() {
+                document.getElementById('score').textContent = this.score;
+            }
+            
+            updateLevel() {
+                document.getElementById('level').textContent = this.level;
+            }
+            
+            clearDiscsAndHoles() {
+                this.discs.forEach(disc => {
+                    if (disc.element.parentNode) {
+                        disc.element.parentNode.removeChild(disc.element);
+                    }
+                });
+                
+                this.holes.forEach(hole => {
+                    if (hole.element.parentNode) {
+                        hole.element.parentNode.removeChild(hole.element);
+                    }
+                });
+                
+                this.discs = [];
+                this.holes = [];
+            }
+            
+            shuffleArray(array) {
+                const newArray = [...array];
+                for (let i = newArray.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                }
+                return newArray;
+            }
+            
+            startGameLoop() {
+                const gameLoop = () => {
+                    this.updatePhysics();
+                    requestAnimationFrame(gameLoop);
+                };
+                gameLoop();
+            }
+        }
+        
+        // Start the game when page loads
+        window.addEventListener('load', () => {
+            console.log('Page loaded, starting game...');
+            new AirHockeyGame();
+        });
+    </script>
+</body>
+</html>

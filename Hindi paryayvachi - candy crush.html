@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paryayvachi Crush</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Eczar:wght@400;700&family=Poppins:wght@400;600&family=Teko:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* General page styling */
+        :root {
+            --grid-size: 8;
+            --tile-size: clamp(40px, 10vw, 70px);
+            --board-size: calc(var(--grid-size) * var(--tile-size));
+            --board-bg: #1a237e; /* Deep indigo */
+            --tile-bg-gradient: linear-gradient(145deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+            --text-color: #ffffff;
+            --score-color: #ffc107; /* Amber */
+            --font-hindi: 'Eczar', serif;
+            --font-ui: 'Poppins', sans-serif;
+            --font-title: 'Teko', sans-serif;
+        }
+
+        body {
+            background: #000428; /* Fallback for older browsers */
+            background: linear-gradient(135deg, #3f51b5 0%, #000428 100%);
+            color: var(--text-color);
+            font-family: var(--font-ui);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top to allow scrolling */
+            min-height: 100vh;
+            margin: 0;
+            overflow-y: auto; /* Allow vertical scrolling */
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        /* New Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(circle at 50% 90%, rgba(255,255,255,0.05) 2px, transparent 2px);
+            background-size: 100px 100px, 150px 150px, 200px 200px;
+            animation: move-sparkles 20s linear infinite;
+            z-index: -1;
+        }
+        
+        @keyframes move-sparkles {
+            from { background-position: 0 0, 0 0, 0 0; }
+            to { background-position: -200px -200px, -300px -300px, -400px -400px; }
+        }
+
+
+        /* Main game container */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+            padding: clamp(15px, 4vw, 30px);
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 650px; /* Max width for large screens */
+        }
+        
+        h1 {
+            font-family: var(--font-title);
+            font-size: clamp(3rem, 10vw, 4.5rem);
+            margin: 0;
+            color: #fff;
+            background: linear-gradient(180deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 193, 7, 0.7), 0 0 30px rgba(255, 165, 0, 0.5);
+            letter-spacing: 2px;
+        }
+
+        /* Score and Moves display */
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        .stat {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+        }
+
+        .stat span {
+            font-weight: 700;
+            color: var(--score-color);
+            font-size: clamp(1.3rem, 4vw, 1.7rem);
+        }
+
+        /* Game board styling */
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-size), 1fr);
+            grid-template-rows: repeat(var(--grid-size), 1fr);
+            width: var(--board-size);
+            height: var(--board-size);
+            background-color: rgba(26, 35, 126, 0.8);
+            border-radius: 15px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            position: relative;
+            padding: 10px;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23303f9f' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M0 60L60 0H30L0 30M60 60V30L30 60'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* Tile styling for the glassy, diamond-cut look */
+        .tile {
+            width: var(--tile-size);
+            height: var(--tile-size);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-hindi);
+            font-size: calc(var(--tile-size) * 0.38);
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            position: absolute;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.5s ease, left 0.5s ease;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+            background: var(--tile-bg-gradient);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3), inset 0 0 8px rgba(255,255,255,0.7);
+            border: 1px solid;
+            border-image-source: linear-gradient(145deg, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+            border-image-slice: 1;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
+            will-change: transform;
+        }
+
+        .tile.selected {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 0 25px var(--score-color), 0 0 40px var(--score-color);
+            border-color: var(--score-color);
+        }
+
+        .tile.highlight {
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 25px rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+        }
+
+        .tile.match-hint {
+            animation: pulse-hint 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-hint {
+            0%, 100% { 
+                box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.6);
+                transform: scale(1.05);
+            }
+        }
+
+        /* Animations */
+        .tile.reveal {
+            animation: reveal 0.4s ease-out forwards;
+        }
+
+        @keyframes reveal {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.3) rotate(10deg); font-size: 0; }
+            100% { transform: scale(1) rotate(0deg); font-size: calc(var(--tile-size) * 0.6); }
+        }
+
+        .tile.crush {
+            animation: crush 0.5s cubic-bezier(0.55, 0.09, 0.68, 0.53) forwards;
+        }
+
+        @keyframes crush {
+            0% { transform: scale(1); opacity: 1; }
+            50% { filter: brightness(2.5); }
+            100% { transform: scale(2.5); opacity: 0; filter: brightness(1); }
+        }
+
+        /* --- New Booster SVG Styles --- */
+        .booster-icon {
+            width: 80%;
+            height: 80%;
+            filter: drop-shadow(0 0 3px rgba(0,0,0,0.8));
+            animation: pulse-booster 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-booster {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+
+        /* Rocket Animation placeholder */
+        .rocket-effect {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+            box-shadow: 0 0 15px #fff, 0 0 25px #fff, 0 0 35px #ffeb3b;
+            border-radius: 5px;
+            animation: fire-rocket 0.3s linear forwards;
+            z-index: 100;
+        }
+        @keyframes fire-rocket {
+            from { width: var(--tile-size); }
+            to { width: var(--board-size); }
+        }
+        
+        /* Bomb Animation Placeholder */
+        .bomb-effect {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,255,150,1) 0%, rgba(255,180,0,0.8) 50%, rgba(255,69,0,0) 70%);
+            border-radius: 50%;
+            animation: explode-bomb 0.4s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes explode-bomb {
+            0% { transform: scale(0); opacity: 1;}
+            100% { transform: scale(1); opacity: 0;}
+        }
+
+        /* Modal for game over/start */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid var(--score-color);
+            box-shadow: 0 0 40px rgba(255, 193, 7, 0.6);
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+             transform: scale(1);
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            color: var(--score-color);
+            font-family: var(--font-title);
+        }
+
+        .modal button {
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            font-family: var(--font-ui);
+            background: var(--score-color);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+        
+        .modal button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>पर्यायवाची क्रश</h1>
+        
+                 <!-- Instructions Section -->
+         <div class="instructions-container" style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px solid rgba(255, 255, 255, 0.2);">
+             <h3 style="color: #ffd700; margin-bottom: 10px; font-size: 1.2rem;">🎮 खेल के नियम / Game Rules:</h3>
+             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                 <div>
+                     <h4 style="color: #ffd700; margin-bottom: 8px;">English:</h4>
+                     <ul style="text-align: left; color: white; line-height: 1.6; font-size: 0.9rem;">
+                         <li>• <strong>Match 3 or more tiles</strong> of the same word group</li>
+                         <li>• <strong>Swap adjacent tiles</strong> by clicking one tile, then its neighbor</li>
+                         <li>• <strong>Words and icons</strong> from same group can be matched</li>
+                         <li>• <strong>Look for patterns:</strong> Same colored tiles in lines of 3+</li>
+                         <li>• <strong>Create boosters</strong> by matching 4 or 5 tiles</li>
+                         <li>• <strong>Score as many points as possible!</strong></li>
+                     </ul>
+                 </div>
+                 <div>
+                     <h4 style="color: #ffd700; margin-bottom: 8px;">हिंदी:</h4>
+                     <ul style="text-align: left; color: white; line-height: 1.6; font-size: 0.9rem;">
+                         <li>• <strong>एक ही शब्द समूह के 3 या अधिक टाइल्स</strong> को मिलाएं</li>
+                         <li>• <strong>आसन्न टाइल्स को स्वैप</strong> करने के लिए एक टाइल पर क्लिक करें, फिर उसके पड़ोसी पर</li>
+                         <li>• <strong>शब्द और आइकन</strong> एक ही समूह से मिल सकते हैं</li>
+                         <li>• <strong>पैटर्न देखें:</strong> 3+ की लाइन में एक जैसे रंग के टाइल्स</li>
+                         <li>• <strong>बूस्टर्स बनाएं</strong> 4 या 5 टाइल्स मिलाकर</li>
+                         <li>• <strong>जितने अधिक अंक बना सकते हैं उतने बनाएं!</strong></li>
+                     </ul>
+                 </div>
+             </div>
+             <div style="margin-top: 10px; padding: 10px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
+                 <p style="color: #ffd700; font-weight: bold; margin: 0;">💡 Tip / सुझाव: Click on a tile, then click on an adjacent tile to swap them and create matches! / एक टाइल पर क्लिक करें, फिर आसन्न टाइल पर क्लिक करके उन्हें स्वैप करें और मैच बनाएं!</p>
+             </div>
+         </div>
+        
+        <div class="stats-container">
+            <div class="stat">स्कोर: <span id="score">0</span></div>
+            <div class="stat">चालें: <span id="moves">30</span></div>
+        </div>
+        <div id="game-board"></div>
+    </div>
+
+    <div id="game-over-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">खेल समाप्त!</h2>
+            <p id="modal-final-score"></p>
+            <button id="modal-restart-button">फिर से खेलें</button>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Game Configuration ---
+        const GRID_SIZE = 8;
+        const STARTING_MOVES = 30;
+
+        // --- Synonym Data ---
+        const synonymGroups = {
+            fire: { words: ['आग', 'अग्नि', 'पावक', 'ज्वाला', 'अनल'], icon: '🔥' },
+            water: { words: ['जल', 'पानी', 'नीर', 'वारि', 'सलिल'], icon: '💧' },
+            sun: { words: ['सूर्य', 'रवि', 'दिनकर', 'भानु', 'दिवाकर'], icon: '☀️' },
+            flower: { words: ['फूल', 'पुष्प', 'सुमन', 'कुसुम', 'प्रसून'], icon: '🌸' },
+            king: { words: ['राजा', 'नृप', 'भूपति', 'नरेश', 'सम्राट'], icon: '👑' },
+            air: { words: ['वायु', 'हवा', 'पवन', 'समीर', 'अनिल'], icon: '💨' },
+            earth: { words: ['पृथ्वी', 'भूमि', 'धरा', 'वसुधा', 'धरती'], icon: '🌍' }
+        };
+
+        // --- DOM Elements ---
+        const gameBoard = document.getElementById('game-board');
+        const scoreDisplay = document.getElementById('score');
+        const movesDisplay = document.getElementById('moves');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalFinalScore = document.getElementById('modal-final-score');
+        const modalRestartButton = document.getElementById('modal-restart-button');
+
+        // --- Game State ---
+        let board = [];
+        let score = 0;
+        let movesLeft = STARTING_MOVES;
+        let selectedTile = null;
+        let isProcessing = false;
+
+        // --- SVG Icons for Boosters ---
+        const boosterSVGs = {
+            'rocket-v': `<svg viewBox="0 0 100 100" class="booster-icon"><defs><linearGradient id="g-rocket" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#ffeb3b" /><stop offset="100%" style="stop-color:#fbc02d" /></linearGradient></defs><path fill="url(#g-rocket)" d="M78.1,50.8c-1.1-3-3.1-5.7-5.8-7.7c-2-1.5-4.4-2.5-7-2.9c-2.6-0.4-5.2-0.2-7.7,0.6c-4.4,1.4-8,4.6-10.4,8.5 c-2.4,3.9-3.6,8.5-3.6,13.2c0,0.8,0,1.6,0.1,2.4c0.1,1.3,0.4,2.6,0.9,3.8c0.8,2.1,2.2,3.9,4.1,5.3c2.7,2,6,3,9.4,2.8 c3.4-0.2,6.7-1.6,9.2-3.9c2.5-2.3,4.2-5.5,4.9-8.8c0.7-3.4,0.4-6.8-0.9-10.1L78.1,50.8z M61.6,70.5c-1.3,1.1-2.9,1.8-4.6,2 c-1.7,0.1-3.4-0.2-4.9-0.9c-1.5-0.7-2.7-1.9-3.6-3.3c-1.1-1.9-1.6-4.1-1.4-6.3c0.1-1.2,0.5-2.4,1.1-3.5c1-1.8,2.5-3.2,4.4-4 c2.6-1.1,5.6-0.9,8,0.5c2.4,1.4,4.2,3.7,5,6.3c0.7,2.3,0.5,4.7-0.4,6.9C64.3,69.2,63.1,70,61.6,70.5z" /><path fill="url(#g-rocket)" d="M57.4,22.1C55.3,16,51.1,11,45.4,8.1c-2.8-1.4-5.8-2.2-8.9-2.2c-3.1,0-6.1,0.8-8.9,2.2C22,11,17.8,16,15.7,22.1 c-2.1,6.1-2.1,12.7,0,18.8c1.6,4.6,4.4,8.6,8.1,11.5l-3,9.2c-0.5,1.6,0.5,3.3,2.1,3.8c1.6,0.5,3.3-0.5,3.8-2.1l2.8-8.5 c1.5,0.2,3.1,0.3,4.6,0.3s3.1-0.1,4.6-0.3l2.8,8.5c0.4,1.3,1.5,2.2,2.8,2.2c0.3,0,0.6-0.1,0.9-0.2c1.6-0.5,2.6-2.2,2.1-3.8 l-3-9.2c3.7-2.9,6.5-6.9,8.1-11.5C59.5,34.8,59.5,28.2,57.4,22.1z" /></svg>`,
+            'rocket-h': `<svg viewBox="0 0 100 100" class="booster-icon" style="transform: rotate(90deg);"><defs><linearGradient id="g-rocket-h" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#ffeb3b" /><stop offset="100%" style="stop-color:#fbc02d" /></linearGradient></defs><use href="#rocket-path" fill="url(#g-rocket-h)" /></svg>`,
+            'bomb': `<svg viewBox="0 0 100 100" class="booster-icon"><defs><radialGradient id="g-bomb" cx="40%" cy="40%" r="50%" fx="30%" fy="30%"><stop offset="0%" style="stop-color: #616161;" /><stop offset="100%" style="stop-color: #212121;" /></radialGradient><linearGradient id="g-fuse" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffeb3b" /><stop offset="100%" style="stop-color:#f57f17" /></linearGradient></defs><path d="M 65 15 A 5 5 0 0 1 70 20 L 75 25 A 5 5 0 0 1 70 30 L 60 30" stroke="url(#g-fuse)" stroke-width="8" fill="none" stroke-linecap="round" /><circle cx="50" cy="60" r="35" fill="url(#g-bomb)" /><circle cx="50" cy="60" r="35" stroke="#424242" stroke-width="2" fill="none" /><circle cx="40" cy="50" r="8" fill="rgba(255,255,255,0.2)"/></svg>`,
+            'rainbow': `<svg viewBox="0 0 100 100" class="booster-icon" style="animation: spin 4s linear infinite, pulse-booster 1.5s infinite ease-in-out;"><defs><conic-gradient id="g-rainbow" from="0deg" at="50% 50%"><stop offset="0%" stop-color="#f00" /><stop offset="16.7%" stop-color="#ff0" /><stop offset="33.3%" stop-color="#0f0" /><stop offset="50%" stop-color="#0ff" /><stop offset="66.7%" stop-color="#00f" /><stop offset="83.3%" stop-color="#f0f" /><stop offset="100%" stop-color="#f00" /></conic-gradient></defs><path d="M50 0L61.2 25.9L90.5 29.3L68.9 48.1L75 76.1L50 62L25 76.1L31.1 48.1L9.5 29.3L38.8 25.9Z" fill="url(#g-rainbow)" /></svg>`
+        };
+        // Add a shared path for the horizontal rocket to use via <use> tag
+        const sharedDefs = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        sharedDefs.style.display = 'none';
+        sharedDefs.innerHTML = `<defs><path id="rocket-path" d="M78.1,50.8c-1.1-3-3.1-5.7-5.8-7.7c-2-1.5-4.4-2.5-7-2.9c-2.6-0.4-5.2-0.2-7.7,0.6c-4.4,1.4-8,4.6-10.4,8.5 c-2.4,3.9-3.6,8.5-3.6,13.2c0,0.8,0,1.6,0.1,2.4c0.1,1.3,0.4,2.6,0.9,3.8c0.8,2.1,2.2,3.9,4.1,5.3c2.7,2,6,3,9.4,2.8 c3.4-0.2,6.7-1.6,9.2-3.9c2.5-2.3,4.2-5.5,4.9-8.8c0.7-3.4,0.4-6.8-0.9-10.1L78.1,50.8z M61.6,70.5c-1.3,1.1-2.9,1.8-4.6,2 c-1.7,0.1-3.4-0.2-4.9-0.9c-1.5-0.7-2.7-1.9-3.6-3.3c-1.1-1.9-1.6-4.1-1.4-6.3c0.1-1.2,0.5-2.4,1.1-3.5c1-1.8,2.5-3.2,4.4-4 c2.6-1.1,5.6-0.9,8,0.5c2.4,1.4,4.2,3.7,5,6.3c0.7,2.3,0.5,4.7-0.4,6.9C64.3,69.2,63.1,70,61.6,70.5z" /><path d="M57.4,22.1C55.3,16,51.1,11,45.4,8.1c-2.8-1.4-5.8-2.2-8.9-2.2c-3.1,0-6.1,0.8-8.9,2.2C22,11,17.8,16,15.7,22.1 c-2.1,6.1-2.1,12.7,0,18.8c1.6,4.6,4.4,8.6,8.1,11.5l-3,9.2c-0.5,1.6,0.5,3.3,2.1,3.8c1.6,0.5,3.3-0.5,3.8-2.1l2.8-8.5 c1.5,0.2,3.1,0.3,4.6,0.3s3.1-0.1,4.6-0.3l2.8,8.5c0.4,1.3,1.5,2.2,2.8,2.2c0.3,0,0.6-0.1,0.9-0.2c1.6-0.5,2.6-2.2,2.1-3.8 l-3-9.2c3.7-2.9,6.5-6.9,8.1-11.5C59.5,34.8,59.5,28.2,57.4,22.1z" /></defs>`;
+        document.body.appendChild(sharedDefs);
+
+
+        // --- Initialization ---
+        function init() {
+            // Reset game state
+            score = 0;
+            movesLeft = STARTING_MOVES;
+            isProcessing = false;
+            selectedTile = null;
+            updateStats();
+            gameOverModal.classList.remove('show');
+            
+            // Create and populate the board
+            gameBoard.innerHTML = '';
+            board = [];
+            
+            for (let row = 0; row < GRID_SIZE; row++) {
+                board[row] = [];
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    // This function is synchronous, so we can build the board data right away
+                    const tileElement = createTileElement(row, col);
+                    gameBoard.appendChild(tileElement);
+                    board[row][col] = {
+                        element: tileElement,
+                        group: tileElement.dataset.group,
+                        word: tileElement.textContent,
+                        icon: synonymGroups[tileElement.dataset.group].icon,
+                        row: row,
+                        col: col,
+                        booster: null // 'rocket-h', 'rocket-v', 'bomb', 'rainbow'
+                    };
+                }
+            }
+
+            // Ensure the initial board has no matches by replacing tiles that form matches
+             while (true) {
+                const matches = findAllMatches();
+                if (matches.length === 0) break;
+                matches.flat().forEach(tile => {
+                    replaceTile(tile.row, tile.col);
+                });
+            }
+        }
+        
+        /**
+         * Creates a single tile element with a random synonym.
+         */
+        function createTileElement(row, col, isRefill = false) {
+            const groupKeys = Object.keys(synonymGroups);
+            let randomGroupKey;
+            
+            // Simple anti-match logic to avoid immediate matches on generation
+            if (!isRefill) {
+                let left1 = col > 0 ? board[row][col-1]?.group : undefined;
+                let left2 = col > 1 ? board[row][col-2]?.group : undefined;
+                let up1 = row > 0 ? board[row-1][col]?.group : undefined;
+                let up2 = row > 1 ? board[row-2][col]?.group : undefined;
+
+                do {
+                    randomGroupKey = groupKeys[Math.floor(Math.random() * groupKeys.length)];
+                } while (
+                    (randomGroupKey === left1 && randomGroupKey === left2) ||
+                    (randomGroupKey === up1 && randomGroupKey === up2)
+                );
+            } else {
+                 randomGroupKey = groupKeys[Math.floor(Math.random() * groupKeys.length)];
+            }
+            
+            const groupWords = synonymGroups[randomGroupKey].words;
+            const groupIcon = synonymGroups[randomGroupKey].icon;
+            
+            // 30% chance to show icon instead of word
+            const shouldShowIcon = Math.random() < 0.3;
+            const displayContent = shouldShowIcon ? groupIcon : groupWords[Math.floor(Math.random() * groupWords.length)];
+
+            const tileElement = document.createElement('div');
+            tileElement.classList.add('tile');
+            tileElement.dataset.row = row;
+            tileElement.dataset.col = col;
+            tileElement.dataset.group = randomGroupKey;
+            tileElement.textContent = displayContent;
+            
+            // Add special styling for icon tiles
+            if (shouldShowIcon) {
+                tileElement.style.fontSize = '2rem';
+                tileElement.style.fontWeight = 'bold';
+            }
+            
+            tileElement.style.top = `${row * 100 / GRID_SIZE}%`;
+            tileElement.style.left = `${col * 100 / GRID_SIZE}%`;
+
+            tileElement.addEventListener('click', () => handleTileClick(tileElement));
+
+            return tileElement;
+        }
+
+        // --- Game Logic ---
+
+        async function handleTileClick(tileElement) {
+            if (isProcessing) return;
+
+            const row = parseInt(tileElement.dataset.row);
+            const col = parseInt(tileElement.dataset.col);
+            const clickedTileData = board[row][col];
+
+            if (!selectedTile) {
+                tileElement.classList.add('selected');
+                selectedTile = clickedTileData;
+            } else if (selectedTile === clickedTileData) {
+                selectedTile.element.classList.remove('selected');
+                selectedTile = null;
+            } else {
+                selectedTile.element.classList.remove('selected');
+                const isAdjacent = Math.abs(selectedTile.row - clickedTileData.row) + Math.abs(selectedTile.col - clickedTileData.col) === 1;
+
+                if (isAdjacent) {
+                    await attemptSwap(selectedTile, clickedTileData);
+                }
+                selectedTile = null;
+            }
+        }
+
+        async function attemptSwap(tile1Data, tile2Data) {
+            isProcessing = true;
+            
+            await swapElements(tile1Data.element, tile2Data.element);
+            swapBoardData(tile1Data, tile2Data);
+
+            // Special booster handling
+            const isT1Booster = tile1Data.booster;
+            const isT2Booster = tile2Data.booster;
+            
+            let matchFound = false;
+
+            if (isT1Booster === 'rainbow' && isT2Booster === 'rainbow') {
+                // Rainbow + Rainbow = Clear entire board
+                decrementMoves();
+                await activateRainbowRainbow();
+                matchFound = true;
+            } else if (isT1Booster === 'rainbow') {
+                decrementMoves();
+                await activateRainbowBooster(tile1Data, tile2Data.group);
+                matchFound = true;
+            } else if (isT2Booster === 'rainbow') {
+                decrementMoves();
+                await activateRainbowBooster(tile2Data, tile1Data.group);
+                matchFound = true;
+            } else {
+                const matches = findAllMatches();
+                if (matches.length > 0) {
+                    decrementMoves();
+                    await processMatchesAndCascades(matches, {tile1: tile1Data, tile2: tile2Data});
+                    matchFound = true;
+                }
+            }
+
+            if (!matchFound) {
+                 // Invalid swap, swap back
+                 await sleep(200);
+                 await swapElements(tile1Data.element, tile2Data.element);
+                 swapBoardData(tile1Data, tile2Data);
+            }
+            
+            if (movesLeft <= 0 && !isProcessing) {
+                endGame("चालें समाप्त!");
+            }
+            
+            isProcessing = false;
+        }
+
+        async function processMatchesAndCascades(initialMatches, moveInfo = null) {
+            let currentMatches = initialMatches;
+            let matchChain = 1;
+
+            while (currentMatches.length > 0) {
+                const boosterInfo = getBoosterFromMove(currentMatches, moveInfo);
+                
+                await crushAndReveal(currentMatches, matchChain);
+
+                if(boosterInfo) createBooster(boosterInfo.row, boosterInfo.col, boosterInfo.type);
+                
+                updateScore(currentMatches, matchChain);
+                
+                await sleep(150);
+                await tilesFall();
+                await refillBoard();
+
+                currentMatches = findAllMatches();
+                if(currentMatches.length > 0) matchChain++;
+            }
+        }
+        
+        function findAllMatches() {
+            let matches = new Set();
+
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const tile = board[r][c];
+                    if (!tile || tile.booster === 'rainbow') continue; // Rainbows don't match on their own
+
+                    // Horizontal Check
+                    if (c < GRID_SIZE - 2) {
+                        if (board[r][c+1]?.group === tile.group && board[r][c+2]?.group === tile.group) {
+                            matches.add(tile);
+                            matches.add(board[r][c+1]);
+                            matches.add(board[r][c+2]);
+                        }
+                    }
+                    // Vertical Check
+                    if (r < GRID_SIZE - 2) {
+                        if (board[r+1][c]?.group === tile.group && board[r+2][c]?.group === tile.group) {
+                            matches.add(tile);
+                            matches.add(board[r+1][c]);
+                            matches.add(board[r+2][c]);
+                        }
+                    }
+                }
+            }
+            if (matches.size > 0) return [Array.from(matches)];
+            return [];
+        }
+
+        async function crushAndReveal(matches, chain) {
+            let allMatchedTiles = new Set(matches.flat());
+            
+            // Activate boosters within the match set
+            const boostersInMatch = Array.from(allMatchedTiles).filter(t => t.booster);
+            for(const booster of boostersInMatch) {
+                const affected = getBoosterAffectedTiles(booster);
+                affected.forEach(t => allMatchedTiles.add(t));
+                activateBoosterEffect(booster);
+            }
+
+            // Stage 1: Reveal icons
+            allMatchedTiles.forEach(tile => {
+                if (tile.element && !tile.booster) {
+                    tile.element.classList.add('reveal');
+                    tile.element.textContent = tile.icon;
+                }
+            });
+            
+            await sleep(400);
+
+            // Stage 2: Crush
+            allMatchedTiles.forEach(tile => {
+                if(tile.element){
+                    tile.element.classList.add('crush');
+                }
+            });
+            
+            await sleep(500);
+
+            // Stage 3: Clean up
+            allMatchedTiles.forEach(tile => {
+                if(tile.element) {
+                    tile.element.remove();
+                    board[tile.row][tile.col] = null;
+                }
+            });
+        }
+        
+        async function tilesFall() {
+            let didFall = false;
+            for (let c = 0; c < GRID_SIZE; c++) {
+                let emptyRow = -1;
+                for (let r = GRID_SIZE - 1; r >= 0; r--) {
+                    if (board[r][c] === null && emptyRow === -1) {
+                        emptyRow = r;
+                    } else if (board[r][c] !== null && emptyRow !== -1) {
+                        didFall = true;
+                        const tile = board[r][c];
+                        board[emptyRow][c] = tile;
+                        board[r][c] = null;
+
+                        tile.row = emptyRow;
+                        tile.element.dataset.row = emptyRow;
+                        tile.element.style.top = `${emptyRow * 100 / GRID_SIZE}%`;
+                        
+                        emptyRow--;
+                    }
+                }
+            }
+            if(didFall) await sleep(500);
+        }
+
+        async function refillBoard() {
+             for (let c = 0; c < GRID_SIZE; c++) {
+                let refillCount = 0;
+                for (let r = GRID_SIZE-1; r >= 0; r--) {
+                     if (board[r][c] === null) {
+                        refillCount++;
+                        const newRow = -refillCount;
+                        const tileElement = createTileElement(r, c, true);
+                        tileElement.style.top = `${newRow * 100 / GRID_SIZE}%`;
+                        gameBoard.appendChild(tileElement);
+
+                        board[r][c] = {
+                            element: tileElement,
+                            group: tileElement.dataset.group,
+                            word: tileElement.textContent,
+                            icon: synonymGroups[tileElement.dataset.group].icon,
+                            row: r,
+                            col: c,
+                            booster: null
+                        };
+                         // Trigger transition
+                        await sleep(50);
+                        tileElement.style.top = `${r * 100 / GRID_SIZE}%`;
+                    }
+                }
+            }
+            return sleep(300);
+        }
+
+        // --- Boosters ---
+
+        function getBoosterFromMove(matches, moveInfo) {
+            const flatMatch = matches.flat();
+            const rows = new Set(flatMatch.map(t => t.row));
+            const cols = new Set(flatMatch.map(t => t.col));
+
+            // Rainbow Gem: 5 in a line
+            if (flatMatch.length >= 5 && (rows.size === 1 || cols.size === 1)) {
+                return { ...moveInfo.tile1, type: 'rainbow' };
+            }
+            // Bomb: T or L shape (e.g., 3 rows and 3 cols covered by a 5-match)
+            if (flatMatch.length >= 5 && rows.size >= 3 && cols.size >= 3) {
+                return { ...moveInfo.tile1, type: 'bomb' };
+            }
+            // Rocket: 4 in a line
+            if (flatMatch.length === 4 && (rows.size === 1 || cols.size === 1)) {
+                return { ...moveInfo.tile1, type: rows.size === 1 ? 'rocket-h' : 'rocket-v' };
+            }
+            return null;
+        }
+
+        function createBooster(row, col, type) {
+            if(board[row] && board[row][col]) {
+                board[row][col].booster = type;
+                board[row][col].element.textContent = '';
+                board[row][col].element.innerHTML = boosterSVGs[type];
+            }
+        }
+        
+        function getBoosterAffectedTiles(boosterTile) {
+            const affected = new Set();
+            switch(boosterTile.booster) {
+                case 'rocket-h':
+                    for(let c=0; c<GRID_SIZE; c++) if(board[boosterTile.row][c]) affected.add(board[boosterTile.row][c]);
+                    break;
+                case 'rocket-v':
+                    for(let r=0; r<GRID_SIZE; r++) if(board[r][boosterTile.col]) affected.add(board[r][boosterTile.col]);
+                    break;
+                case 'bomb':
+                    for(let r = boosterTile.row - 1; r <= boosterTile.row + 1; r++) {
+                        for(let c = boosterTile.col - 1; c <= boosterTile.col + 1; c++) {
+                            if(r>=0 && r<GRID_SIZE && c>=0 && c<GRID_SIZE && board[r][c]) {
+                                affected.add(board[r][c]);
+                            }
+                        }
+                    }
+                    break;
+            }
+            return Array.from(affected);
+        }
+        
+        function activateBoosterEffect(booster) {
+             const effect = document.createElement('div');
+             const tileEl = booster.element;
+             switch(booster.booster) {
+                 case 'rocket-h':
+                     effect.className = 'rocket-effect';
+                     effect.style.top = tileEl.style.top;
+                     effect.style.left = '0px';
+                     effect.style.height = `${100/GRID_SIZE}%`;
+                     break;
+                 case 'rocket-v':
+                      effect.className = 'rocket-effect';
+                      effect.style.top = '0px';
+                      effect.style.left = tileEl.style.left;
+                      effect.style.height = `var(--board-size)`;
+                      effect.style.transformOrigin = `calc(var(--tile-size)/2) calc(var(--tile-size)/2)`;
+                      effect.style.transform = 'rotate(90deg)';
+                      break;
+                 case 'bomb':
+                     effect.className = 'bomb-effect';
+                     const bombSize = `calc(var(--tile-size) * 3)`;
+                     effect.style.width = bombSize;
+                     effect.style.height = bombSize;
+                     effect.style.top = `calc(${tileEl.style.top} - var(--tile-size))`;
+                     effect.style.left = `calc(${tileEl.style.left} - var(--tile-size))`;
+                     break;
+             }
+             if (effect.className) gameBoard.appendChild(effect);
+             setTimeout(() => effect.remove(), 500);
+        }
+
+        async function activateRainbowBooster(rainbowTile, targetGroup) {
+             const allAffected = board.flat().filter(t => t && t.group === targetGroup);
+             allAffected.push(rainbowTile);
+             await processMatchesAndCascades([allAffected]);
+        }
+
+        async function activateRainbowRainbow() {
+             const allAffected = board.flat().filter(t => t !== null);
+             await processMatchesAndCascades([allAffected]);
+        }
+
+
+        // --- Utility Functions ---
+
+        function swapElements(elem1, elem2) {
+            const tempTop = elem1.style.top;
+            const tempLeft = elem1.style.left;
+            elem1.style.top = elem2.style.top;
+            elem1.style.left = elem2.style.left;
+            elem2.style.top = tempTop;
+            elem2.style.left = tempLeft;
+            return sleep(300);
+        }
+
+        function swapBoardData(tile1Data, tile2Data) {
+            board[tile1Data.row][tile1Data.col] = tile2Data;
+            board[tile2Data.row][tile2Data.col] = tile1Data;
+            
+            [tile1Data.row, tile2Data.row] = [tile2Data.row, tile1Data.row];
+            [tile1Data.col, tile2Data.col] = [tile2Data.col, tile1Data.col];
+            
+            tile1Data.element.dataset.row = tile1Data.row;
+            tile1Data.element.dataset.col = tile1Data.col;
+            tile2Data.element.dataset.row = tile2Data.row;
+            tile2Data.element.dataset.col = tile2Data.col;
+        }
+
+        function updateStats() {
+            scoreDisplay.textContent = score;
+            movesDisplay.textContent = movesLeft;
+        }
+        
+        function decrementMoves() {
+            if (movesLeft > 0) {
+                 movesLeft--;
+                 updateStats();
+            }
+        }
+
+        function updateScore(matches, chain) {
+             let points = matches.flat().length * 10 * chain;
+             score += points;
+             updateStats();
+        }
+
+        function replaceTile(row, col) {
+            const oldTile = board[row][col];
+            if(oldTile && oldTile.element) oldTile.element.remove();
+            
+            const newTileEl = createTileElement(row, col, true);
+            gameBoard.appendChild(newTileEl);
+            board[row][col] = {
+                element: newTileEl,
+                group: newTileEl.dataset.group,
+                word: newTileEl.textContent,
+                icon: synonymGroups[newTileEl.dataset.group].icon,
+                row: row,
+                col: col,
+                booster: null
+            };
+        }
+        
+        function endGame(reason) {
+            isProcessing = true;
+            modalTitle.textContent = reason;
+            modalFinalScore.textContent = `आपका अंतिम स्कोर: ${score}`;
+            gameOverModal.classList.add('show');
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // --- Match Hint System ---
+        function highlightPotentialMatches() {
+            // Remove existing highlights
+            document.querySelectorAll('.tile.highlight').forEach(tile => {
+                tile.classList.remove('highlight');
+            });
+
+            // Find potential matches
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const tile = board[r][c];
+                    if (!tile) continue;
+
+                    // Check horizontal potential
+                    if (c < GRID_SIZE - 2) {
+                        if (board[r][c+1]?.group === tile.group && board[r][c+2]?.group === tile.group) {
+                            tile.element.classList.add('highlight');
+                            board[r][c+1].element.classList.add('highlight');
+                            board[r][c+2].element.classList.add('highlight');
+                        }
+                    }
+                    
+                    // Check vertical potential
+                    if (r < GRID_SIZE - 2) {
+                        if (board[r+1][c]?.group === tile.group && board[r+2][c]?.group === tile.group) {
+                            tile.element.classList.add('highlight');
+                            board[r+1][c].element.classList.add('highlight');
+                            board[r+2][c].element.classList.add('highlight');
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Event Listeners ---
+        modalRestartButton.addEventListener('click', init);
+        
+        // --- Start Game ---
+        window.onload = () => {
+            init();
+            // Add hint system after a delay
+            setTimeout(() => {
+                setInterval(highlightPotentialMatches, 3000); // Show hints every 3 seconds
+            }, 5000);
+        };
+
+    </script>
+</body>
+</html>

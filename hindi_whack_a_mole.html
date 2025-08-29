@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hindi-English Whack-A-Mole</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57);
+            background-size: 300% 300%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            color: white;
+            cursor: crosshair;
+            overflow: hidden;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .game-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .game-header h1 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .score-board {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            font-size: 1.1em;
+            z-index: 100;
+        }
+        .score {
+            background: rgba(0,0,0,0.4);
+            padding: 10px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .target-display {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 25px;
+            border-radius: 20px;
+            border: 3px solid #FFD700;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            text-align: center;
+            animation: pulse 2s infinite;
+            width: 200px;
+            z-index: 100;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .timer-bar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: clamp(300px, 60vw, 500px);
+            height: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #FFD700;
+            z-index: 100;
+        }
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #FFC107, #FF5722);
+            border-radius: 8px;
+            transition: width 0.1s linear;
+            width: 100%;
+        }
+        .game-area {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            background: rgba(139, 69, 19, 0.6);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
+            width: clamp(320px, 80vw, 650px);
+            z-index: 50;
+        }
+        .hole {
+            width: 100%;
+            aspect-ratio: 1 / 1; 
+            background: radial-gradient(circle, #1a0f08, #0d0704);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 5px solid #654321;
+            box-shadow: inset 0 8px 20px rgba(0,0,0,0.7);
+        }
+        .mole {
+            position: absolute;
+            bottom: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 80%;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10;
+        }
+        .mole-body {
+            width: 100%;
+            height: 75%;
+            border-radius: 50% 50% 25% 25%;
+            position: absolute;
+            bottom: 0;
+            border: 3px solid #333;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .mole-face {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 50%;
+        }
+        .mole-eyes {
+            display: flex;
+            justify-content: space-between;
+            width: 50%;
+            margin: 0 auto 10%;
+            height: 30%;
+        }
+        .eye {
+            width: 40%;
+            height: 100%;
+            background: #000;
+            border-radius: 50%;
+            animation: blink 4s infinite;
+        }
+        .mole-nose {
+            width: 10%;
+            height: 6%;
+            background: #000;
+            border-radius: 50%;
+            margin: 0 auto 5%;
+        }
+        .mole-mouth {
+            width: 25%;
+            height: 10%;
+            border: 2px solid #000;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            margin: 0 auto;
+        }
+        .hindi-word {
+            position: absolute;
+            bottom: 75%;
+            margin-bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: clamp(0.7rem, 2vw, 1rem);
+            font-weight: bold;
+            white-space: nowrap;
+            border: 2px solid #FFD700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: float 2s ease-in-out infinite;
+            z-index: 15;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0px); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+        .mole.color-1 .mole-body { background: linear-gradient(145deg, #FF6B6B, #FF8E8E); }
+        .mole.color-2 .mole-body { background: linear-gradient(145deg, #4ECDC4, #70E0D8); }
+        .mole.color-3 .mole-body { background: linear-gradient(145deg, #45B7D1, #67C3E0); }
+        .mole.color-4 .mole-body { background: linear-gradient(145deg, #96CEB4, #B4DBC7); }
+        .mole.color-5 .mole-body { background: linear-gradient(145deg, #FECA57, #FFD574); }
+        .mole.color-6 .mole-body { background: linear-gradient(145deg, #FF9FF3, #F368E0); }
+
+        .mole.active {
+            bottom: -20%;
+        }
+        .mole.hit {
+            animation: mole-hit 0.4s ease-out;
+        }
+        .mole.correct-hit {
+            animation: mole-correct 0.6s ease-out;
+        }
+        @keyframes mole-correct {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.2) rotate(10deg); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+        @keyframes mole-hit {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(0.8) rotate(-10deg); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+        @keyframes blink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+        .mole:hover {
+            transform: translateX(-50%) scale(1.1);
+        }
+        .game-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            justify-content: center;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .start-button {
+            padding: 18px 36px;
+            font-size: 20px;
+            font-weight: bold;
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+            animation: startPulse 2s ease-in-out infinite;
+        }
+        @keyframes startPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        /* Instructions Overlay Styles */
+        .instructions-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57);
+            background-size: 300% 300%;
+            animation: gradientShift 15s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: #333;
+        }
+
+        .instructions-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+            color: #333;
+        }
+
+        .instructions-content h2 {
+            color: #FF6B6B;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions-grid {
+            margin-bottom: 30px;
+        }
+
+        .instruction-section h3 {
+            color: #1f2937;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .instruction-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .instruction-column h4 {
+            color: #FF6B6B;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .instruction-column ul {
+            text-align: left;
+            list-style: none;
+            padding: 0;
+        }
+
+        .instruction-column li {
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Instructions Button Styles */
+        .instructions-button-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+        }
+
+        .instructions-btn {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .instructions-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Instructions Modal Styles */
+        .instructions-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .instructions-modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 18px 36px;
+            border-radius: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.6);
+        }
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: bold;
+            padding: 20px 40px;
+            border-radius: 15px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            text-align: center;
+        }
+        .feedback.correct {
+            background: linear-gradient(135deg, #4CAF50, #81C784);
+            color: white;
+        }
+        .feedback.wrong {
+            background: linear-gradient(135deg, #FF5252, #FF8A80);
+            color: white;
+        }
+        .feedback.show {
+            opacity: 1;
+            animation: feedbackPulse 0.6s ease-out;
+        }
+        @keyframes feedbackPulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+            .target-display {
+                left: 10px;
+                width: 150px;
+                font-size: 1rem;
+                padding: 15px 20px;
+            }
+            
+            .game-area {
+                width: clamp(280px, 85vw, 500px);
+                gap: 8px;
+                padding: 12px;
+            }
+            
+            .timer-bar {
+                width: clamp(250px, 70vw, 400px);
+            }
+            
+            .score-board {
+                font-size: 1em;
+                gap: 10px;
+            }
+            
+            .game-controls {
+                bottom: 10px;
+                gap: 10px;
+            }
+            
+            .instructions-button-container {
+                bottom: 70px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .target-display {
+                left: 5px;
+                width: 120px;
+                font-size: 0.9rem;
+                padding: 10px 15px;
+            }
+            
+            .game-area {
+                width: clamp(250px, 90vw, 400px);
+                gap: 6px;
+                padding: 10px;
+            }
+            
+            .hole {
+                border-width: 3px;
+            }
+            
+            .hindi-word {
+                font-size: 0.8rem;
+                padding: 3px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Instructions Overlay -->
+    <div class="instructions-overlay" id="instructionsOverlay" style="display: flex;">
+        <div class="instructions-content">
+            <h2>🎯 Hindi-English Whack-A-Mole 🎯</h2>
+            <div class="instructions-grid">
+                <div class="instruction-section">
+                    <h3>🎮 How to Play / कैसे खेलें:</h3>
+                    <div class="instruction-columns">
+                        <div class="instruction-column">
+                            <h4>English:</h4>
+                            <ul>
+                                <li>🎯 Find the Hindi word that matches the English word shown</li>
+                                <li>🔨 Click on moles with the correct Hindi translation</li>
+                                <li>⏱️ You have 10 seconds per word to find all correct moles</li>
+                                <li>🚫 Avoid clicking wrong Hindi words to avoid penalties</li>
+                                <li>🏆 Build combos and advance levels for bonus points!</li>
+                            </ul>
+                        </div>
+                        <div class="instruction-column">
+                            <h4>हिंदी:</h4>
+                            <ul>
+                                <li>🎯 दिखाए गए अंग्रेजी शब्द से मेल खाता हिंदी शब्द ढूंढें</li>
+                                <li>🔨 सही हिंदी अनुवाद वाले मोल पर क्लिक करें</li>
+                                <li>⏱️ सभी सही मोल ढूंढने के लिए आपके पास 10 सेकंड हैं</li>
+                                <li>🚫 दंड से बचने के लिए गलत हिंदी शब्दों पर क्लिक न करें</li>
+                                <li>🏆 बोनस अंकों के लिए कॉम्बो बनाएं और स्तर बढ़ाएं!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="start-btn" onclick="startGame()">
+                ▶️ Start Game / खेल शुरू करें
+            </button>
+        </div>
+    </div>
+
+    <div class="game-container" id="gameContainer" style="display: none !important;">
+        <div class="game-header">
+            <h1>🎯 Hindi-English Whack-A-Mole 🎯</h1>
+        </div>
+    <div class="score-board">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="score">Time: <span id="time">60</span>s</div>
+        <div class="score">Level: <span id="level">1</span></div>
+    </div>
+    <div class="target-display">
+        <div>Find the Hindi word for:</div>
+        <div style="font-size: 1.2em; margin-top: 10px;" id="targetWord">Click Start to Play!</div>
+    </div>
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill"></div>
+    </div>
+    <div class="game-area" id="gameArea">
+        <!-- Holes and moles are generated by JavaScript -->
+    </div>
+    <div class="game-controls">
+        <button class="start-button" onclick="startGame()">🎮 START GAME 🎮</button>
+        <button onclick="pauseGame()">Pause</button>
+        <button onclick="resetGame()">Reset</button>
+    </div>
+        <!-- Instructions Button -->
+        <div class="instructions-button-container">
+            <button class="instructions-btn" onclick="showInstructions()">
+                📖 Show Instructions / निर्देश दिखाएं
+            </button>
+        </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div class="instructions-modal" id="instructionsModal">
+        <div class="instructions-modal-content">
+            <span class="close-btn" onclick="hideInstructions()">&times;</span>
+            <h2>🎯 Hindi-English Whack-A-Mole 🎯</h2>
+            <div class="instructions-grid">
+                <div class="instruction-section">
+                    <h3>🎮 How to Play / कैसे खेलें:</h3>
+                    <div class="instruction-columns">
+                        <div class="instruction-column">
+                            <h4>English:</h4>
+                            <ul>
+                                <li>🎯 Find the Hindi word that matches the English word shown</li>
+                                <li>🔨 Click on moles with the correct Hindi translation</li>
+                                <li>⏱️ You have 10 seconds per word to find all correct moles</li>
+                                <li>🚫 Avoid clicking wrong Hindi words to avoid penalties</li>
+                                <li>🏆 Build combos and advance levels for bonus points!</li>
+                            </ul>
+                        </div>
+                        <div class="instruction-column">
+                            <h4>हिंदी:</h4>
+                            <ul>
+                                <li>🎯 दिखाए गए अंग्रेजी शब्द से मेल खाता हिंदी शब्द ढूंढें</li>
+                                <li>🔨 सही हिंदी अनुवाद वाले मोल पर क्लिक करें</li>
+                                <li>⏱️ सभी सही मोल ढूंढने के लिए आपके पास 10 सेकंड हैं</li>
+                                <li>🚫 दंड से बचने के लिए गलत हिंदी शब्दों पर क्लिक न करें</li>
+                                <li>🏆 बोनस अंकों के लिए कॉम्बो बनाएं और स्तर बढ़ाएं!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <script>
+        const wordPairs = {
+            'knowledge': 'ज्ञान', 'wisdom': 'बुद्धिमत्ता', 'happiness': 'खुशी', 'sorrow': 'दुःख',
+            'strength': 'शक्ति', 'weakness': 'कमजोरी', 'truth': 'सत्य', 'justice': 'न्याय',
+            'peace': 'शांति', 'war': 'युद्ध', 'victory': 'विजय', 'defeat': 'हार', 'success': 'सफलता',
+            'failure': 'असफलता', 'courage': 'साहस', 'fear': 'भय', 'love': 'प्रेम', 'hatred': 'घृणा',
+            'friendship': 'मित्रता', 'enemy': 'शत्रु', 'respect': 'सम्मान', 'trust': 'विश्वास'
+        };
+
+        let score = 0, timeLeft = 60, level = 1, gameActive = false;
+        let currentEnglishWord = '', correctHindiWord = '';
+        const WORD_DURATION = 10;
+        let wordTimer = WORD_DURATION;
+        let gameTimer, wordTimerInterval;
+        let correctMolesOnScreen = 0;
+
+        const scoreElement = document.getElementById('score');
+        const timeElement = document.getElementById('time');
+        const levelElement = document.getElementById('level');
+        const targetWordElement = document.getElementById('targetWord');
+        const feedbackElement = document.getElementById('feedback');
+        const gameArea = document.getElementById('gameArea');
+        const timerFillElement = document.getElementById('timerFill');
+        const colors = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6'];
+
+        function initializeGame() {
+            gameArea.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const hole = document.createElement('div');
+                hole.className = 'hole';
+                const mole = document.createElement('div');
+                mole.className = `mole ${colors[i % colors.length]}`;
+                mole.dataset.hole = i;
+                // FIX: Moved hindi-word to be a direct child of .mole
+                mole.innerHTML = `
+                    <div class="hindi-word"></div>
+                    <div class="mole-body">
+                        <div class="mole-face">
+                            <div class="mole-eyes"><div class="eye"></div><div class="eye"></div></div>
+                            <div class="mole-nose"></div>
+                            <div class="mole-mouth"></div>
+                        </div>
+                    </div>`;
+                mole.addEventListener('click', () => hitMole(mole));
+                hole.appendChild(mole);
+                gameArea.appendChild(hole);
+            }
+        }
+
+        function getRandomWordPair() {
+            const englishWords = Object.keys(wordPairs);
+            const randomEnglish = englishWords[Math.floor(Math.random() * englishWords.length)];
+            return { english: randomEnglish, hindi: wordPairs[randomEnglish] };
+        }
+
+        function getRandomWrongHindi() {
+            const hindiWords = Object.values(wordPairs);
+            let randomHindi;
+            do {
+                randomHindi = hindiWords[Math.floor(Math.random() * hindiWords.length)];
+            } while (randomHindi === correctHindiWord);
+            return randomHindi;
+        }
+
+        function setNewWord() {
+            hideAllMoles();
+            const wordPair = getRandomWordPair();
+            currentEnglishWord = wordPair.english;
+            correctHindiWord = wordPair.hindi;
+            targetWordElement.textContent = currentEnglishWord;
+            wordTimer = WORD_DURATION;
+            correctMolesOnScreen = 0;
+            startWordTimer();
+
+            const MAX_MOLES = 15;
+            // Ensure more correct moles spawn, with more at higher levels
+            const correctMolesToSpawn = Math.max(3, Math.min(8, 3 + Math.floor(level / 2)));
+            const decoyMolesToSpawn = Math.max(2, MAX_MOLES - correctMolesToSpawn);
+
+            // Spawn some decoy moles first to create confusion
+            spawnMoles(Math.min(3, decoyMolesToSpawn), false);
+            
+            // Then spawn correct moles after a delay
+            setTimeout(() => {
+                spawnMoles(correctMolesToSpawn, true);
+            }, 3000);
+            
+            // Spawn remaining decoy moles after correct ones
+            setTimeout(() => {
+                spawnMoles(decoyMolesToSpawn - Math.min(3, decoyMolesToSpawn), false);
+            }, 5000);
+        }
+
+        function startWordTimer() {
+            clearInterval(wordTimerInterval);
+            timerFillElement.style.transition = 'none';
+            timerFillElement.style.width = '100%';
+            void timerFillElement.offsetWidth;
+            timerFillElement.style.transition = `width ${WORD_DURATION}s linear`;
+            timerFillElement.style.width = '0%';
+
+            wordTimerInterval = setTimeout(() => {
+                if (gameActive) {
+                    showFeedback('Time\'s Up!', 'wrong');
+                    setNewWord();
+                }
+            }, WORD_DURATION * 1000);
+        }
+
+        function spawnMoles(count, isCorrect) {
+            const allMoles = document.querySelectorAll('.mole');
+            const availableMoles = Array.from(allMoles).filter(m => !m.classList.contains('active'));
+            
+            for (let i = 0; i < count; i++) {
+                if (availableMoles.length === 0) break;
+
+                const randomIndex = Math.floor(Math.random() * availableMoles.length);
+                const mole = availableMoles.splice(randomIndex, 1)[0];
+                const hindiWordElement = mole.querySelector('.hindi-word');
+
+                hindiWordElement.textContent = isCorrect ? correctHindiWord : getRandomWrongHindi();
+                mole.dataset.correct = isCorrect;
+
+                if (isCorrect) {
+                    correctMolesOnScreen++;
+                }
+
+                setTimeout(() => {
+                    mole.classList.add('active');
+                    setTimeout(() => {
+                        mole.classList.remove('active');
+                    }, 3000 + Math.random() * 2000); // Shorter display time for more challenge
+                }, isCorrect ? 1000 + Math.random() * 2000 : 500 + Math.random() * 1500); // More random timing
+            }
+        }
+
+        function hitMole(mole) {
+            if (!gameActive || !mole.classList.contains('active')) return;
+
+            const isCorrect = mole.dataset.correct === 'true';
+            mole.classList.remove('active');
+
+            if (isCorrect) {
+                mole.classList.add('correct-hit');
+                const points = 20 * level;
+                score += points;
+                showFeedback(`+${points}!`, 'correct');
+                correctMolesOnScreen--;
+
+                if (correctMolesOnScreen === 0) {
+                    showFeedback('All Found!', 'correct');
+                    clearInterval(wordTimerInterval);
+                    setTimeout(() => { if(gameActive) setNewWord(); }, 1000);
+                }
+            } else {
+                mole.classList.add('hit');
+                score = Math.max(0, score - 15);
+                showFeedback('Wrong! -15', 'wrong');
+            }
+            scoreElement.textContent = score;
+             if (score >= level * 300) {
+                level++;
+                levelElement.textContent = level;
+                showFeedback('Level Up! Level ' + level, 'correct');
+            }
+            setTimeout(() => { mole.classList.remove('correct-hit', 'hit'); }, 600);
+        }
+
+        function hideAllMoles() {
+            document.querySelectorAll('.mole.active').forEach(mole => {
+                mole.classList.remove('active');
+            });
+        }
+
+        function showFeedback(message, type) {
+            feedbackElement.textContent = message;
+            feedbackElement.className = `feedback ${type} show`;
+            setTimeout(() => { feedbackElement.classList.remove('show'); }, 1500);
+        }
+
+        function startGame() {
+            if (gameActive) return;
+            
+            // Hide instructions overlay and show game
+            document.getElementById('instructionsOverlay').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            
+            gameActive = true;
+            score = 0;
+            timeLeft = 60;
+            level = 1;
+            scoreElement.textContent = score;
+            timeElement.textContent = timeLeft;
+            levelElement.textContent = level;
+            setNewWord();
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                timeElement.textContent = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+        }
+
+        function showInstructions() {
+            document.getElementById('instructionsModal').style.display = 'block';
+        }
+
+        function hideInstructions() {
+            document.getElementById('instructionsModal').style.display = 'none';
+        }
+
+        function pauseGame() {
+            showFeedback('Pause not available', 'wrong');
+        }
+
+        function resetGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            clearInterval(wordTimerInterval);
+            hideAllMoles();
+            score = 0;
+            timeLeft = 60;
+            level = 1;
+            scoreElement.textContent = score;
+            timeElement.textContent = timeLeft;
+            levelElement.textContent = level;
+            targetWordElement.textContent = 'Click Start to Play!';
+            timerFillElement.style.transition = 'none';
+            timerFillElement.style.width = '100%';
+            
+            // Show instructions overlay again
+            document.getElementById('instructionsOverlay').style.display = 'flex';
+            document.getElementById('gameContainer').style.display = 'none';
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            clearInterval(wordTimerInterval);
+            hideAllMoles();
+            targetWordElement.textContent = `Game Over! Final Score: ${score}`;
+            showFeedback(`Game Over! Score: ${score}`, 'correct');
+        }
+
+        initializeGame();
+    </script>
+</body>
+</html>
+
+

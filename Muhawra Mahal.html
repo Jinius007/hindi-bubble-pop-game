@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Carousel</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for better aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+                 .nav-arrow {
+             position: absolute;
+             top: 50%;
+             transform: translateY(-50%);
+             background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+             color: white;
+             border-radius: 15px;
+             width: auto;
+             min-width: 120px;
+             height: 60px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             user-select: none;
+             z-index: 10;
+             font-weight: 600;
+             font-size: 1rem;
+             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+             border: 2px solid rgba(255, 255, 255, 0.2);
+         }
+         .nav-arrow:hover { 
+             background: linear-gradient(135deg, #2563eb, #1e40af);
+             transform: translateY(-50%) scale(1.05);
+             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+         }
+         .nav-arrow.left { left: 1rem; }
+         .nav-arrow.right { right: 1rem; }
+        #carouselImage {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+            background-color: #111827;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+                 /* --- Hint Display and Modal Styles --- */
+         #hint-display {
+             animation: hintPulse 3s ease-in-out infinite;
+         }
+         
+                   @keyframes hintPulse {
+              0%, 100% { transform: scale(1); }
+              50% { transform: scale(1.02); }
+          }
+        
+        #feedback-modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #feedback-modal.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #feedback-modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        #feedback-modal.visible #feedback-modal-content { transform: scale(1); }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+                   <!-- Current Hint Display -->
+      <div id="hint-display" class="fixed bottom-1/4 left-4 z-40 bg-gradient-to-r from-yellow-100 to-orange-100 border-4 border-yellow-400 rounded-lg p-4 shadow-lg max-w-xs">
+          <div class="text-center">
+              <h3 class="text-lg font-bold text-yellow-800 mb-2">🎯 Current Hint / वर्तमान संकेत</h3>
+              <p id="current-hint-text" class="text-sm text-gray-800 font-medium">Find the muhawra that means "A fool cannot appreciate good things" / ऐसा मुहावरा ढूंढें जिसका मतलब है "मूर्ख व्यक्ति अच्छी चीज़ों की कदर नहीं करता"</p>
+          </div>
+      </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal">
+        <div id="feedback-modal-content" class="w-11/12 max-w-md">
+            <h3 id="feedback-title" class="text-2xl font-bold text-green-600 mb-4"></h3>
+            <p id="feedback-text" class="text-lg text-gray-700"></p>
+            <button id="close-modal-btn" class="mt-6 bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors">Close</button>
+        </div>
+    </div>
+
+    <div id="app-container" class="h-screen w-screen flex flex-col">
+        <!-- Top 80%: Image Carousel -->
+        <div id="carousel-container" class="relative h-4/5 w-full bg-gray-900">
+            <img id="carouselImage" src="" alt="Carousel Image">
+                         <div id="prevBtn" class="nav-arrow left">← पिछला कमरा</div>
+             <div id="nextBtn" class="nav-arrow right">अगला कमरा →</div>
+        </div>
+
+                 <!-- Bottom 20%: Button Grid -->
+                  <div id="button-grid-container" class="h-1/5 w-full bg-white p-2 sm:p-4 flex items-center justify-center border-t-2 border-gray-200">
+              <div id="buttonGrid" class="grid grid-cols-8 sm:grid-cols-12 gap-2 w-full max-w-6xl"></div>
+          </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const images = [
+                'https://sanbvafzvutnwrxxmtih.supabase.co/storage/v1/object/public/muhawrarooms/Picture1.png',
+                'https://sanbvafzvutnwrxxmtih.supabase.co/storage/v1/object/public/muhawrarooms/Picture2.png',
+                'https://sanbvafzvutnwrxxmtih.supabase.co/storage/v1/object/public/muhawrarooms/Picture3.png',
+                'https://sanbvafzvutnwrxxmtih.supabase.co/storage/v1/object/public/muhawrarooms/Picture4.png'
+            ];
+            let currentImageIndex = 0;
+            const carouselImage = document.getElementById('carouselImage');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+                                      const buttonGrid = document.getElementById('buttonGrid');
+             const hintDisplay = document.getElementById('hint-display');
+             const currentHintText = document.getElementById('current-hint-text');
+             const feedbackModal = document.getElementById('feedback-modal');
+             const feedbackTitle = document.getElementById('feedback-title');
+             const feedbackText = document.getElementById('feedback-text');
+             const closeModalBtn = document.getElementById('close-modal-btn');
+
+
+             // --- Hint Display Logic ---
+             function updateHint(hintText) {
+                 currentHintText.textContent = hintText;
+                 // Add a brief highlight animation
+                 hintDisplay.style.animation = 'none';
+                 setTimeout(() => {
+                     hintDisplay.style.animation = 'hintPulse 3s ease-in-out infinite';
+                 }, 10);
+             }
+
+            // --- Modal Logic ---
+            function showModal(title, text) {
+                feedbackTitle.textContent = title;
+                feedbackText.textContent = text;
+                feedbackModal.classList.add('visible');
+            }
+            closeModalBtn.addEventListener('click', () => feedbackModal.classList.remove('visible'));
+            feedbackModal.addEventListener('click', (e) => {
+                 if(e.target === feedbackModal) feedbackModal.classList.remove('visible');
+            });
+
+
+            // --- Carousel Logic ---
+            function preloadImages() { /* ... preloading logic ... */ }
+            function showImage() { /* ... show image logic ... */ }
+            nextBtn.addEventListener('click', () => { /* ... next logic ... */ });
+            prevBtn.addEventListener('click', () => { /* ... prev logic ... */ });
+            document.addEventListener('keydown', (e) => { /* ... keydown logic ... */ });
+
+                         // --- Button Grid Logic ---
+             let currentMuhawraStep = 1; // Track current step in progression
+             let solvedMuhawras = new Set();
+             
+                           // Define the progression sequence
+              const muhawraProgression = [
+                  { 
+                      step: 1, 
+                      correctButtons: [10], 
+                      currentHint: 'Find the muhawra that means "A fool cannot appreciate good things" / ऐसा मुहावरा ढूंढें जिसका मतलब है "मूर्ख व्यक्ति अच्छी चीज़ों की कदर नहीं करता"',
+                      hint: 'अगला संकेत: क्रोध को और बढ़ाना / To make things worse or someone angrier' 
+                  },
+                  { 
+                      step: 2, 
+                      correctButtons: [24], 
+                      currentHint: 'Find the muhawra that means "To make things worse or someone angrier" / ऐसा मुहावरा ढूंढें जिसका मतलब है "क्रोध को और बढ़ाना"',
+                      hint: 'अगला संकेत: किसी को उसकी वास्तविकता या सच्चाई दिखाना / To show someone their true face or reality' 
+                  },
+                  { 
+                      step: 3, 
+                      correctButtons: [11, 16, 26], 
+                      currentHint: 'Find the muhawra that means "To show someone their true face or reality" / ऐसा मुहावरा ढूंढें जिसका मतलब है "किसी को उसकी वास्तविकता या सच्चाई दिखाना"',
+                      hint: 'अगला संकेत: A person with mediocre abilities who is considered great among a group of incapable people / औसत दर्जे की क्षमताओं वाला व्यक्ति जो अक्षम लोगों के समूह के बीच महान माना जाता है' 
+                  },
+                  { 
+                      step: 4, 
+                      correctButtons: [7], 
+                      currentHint: 'Find the muhawra that means "A person with mediocre abilities who is considered great among a group of incapable people" / ऐसा मुहावरा ढूंढें जिसका मतलब है "औसत दर्जे की क्षमताओं वाला व्यक्ति जो अक्षम लोगों के समूह के बीच महान माना जाता है"',
+                      hint: 'सही मुहावरा: "अंधों में काना राजा" / Andhon mein kana raja', 
+                      nextHint: 'For one\'s intellect or common sense to be clouded, leading to an inability to think clearly or make rational decisions. / व्यक्ति सही-गलत का भेद नहीं कर पा रहा है' 
+                  },
+                  { 
+                      step: 5, 
+                      correctButtons: [21], 
+                      currentHint: 'Find the muhawra that means "For one\'s intellect or common sense to be clouded" / ऐसा मुहावरा ढूंढें जिसका मतलब है "व्यक्ति सही-गलत का भेद नहीं कर पा रहा है"',
+                      hint: 'सही मुहावरा: "अक्ल पर पर्दा पड़ना" / Akl par pardaa padna', 
+                      completion: true 
+                  }
+              ];
+             
+             // Additional muhawras that can be solved in any order after the main progression
+             const bonusMuhawras = [
+                 { buttons: [15], hint: 'सही मुहावरा: "आईना दिखाना" / Aina dikhana' },
+                 { buttons: [3], hint: 'सही मुहावरा: "अंधेर नगरी चौपट राजा" / Andher nagari chaupat raja' },
+                 { buttons: [18], hint: 'सही मुहावरा: "अक्ल का दुश्मन" / Akl ka dushman' }
+             ];
+             
+             for (let i = 1; i <= 26; i++) {
+                 const button = document.createElement('button');
+                 button.textContent = i;
+                 button.className = 'w-full h-10 text-sm sm:text-base bg-gray-200 hover:bg-blue-500 hover:text-white rounded-md transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50';
+                 
+                 button.addEventListener('click', () => {
+                     handleButtonClick(i);
+                 });
+                 
+                 buttonGrid.appendChild(button);
+             }
+             
+                           function handleButtonClick(buttonNumber) {
+                  // Check if this is the correct button for the current step
+                  const currentStep = muhawraProgression[currentMuhawraStep - 1];
+                  
+                  if (currentStep && currentStep.correctButtons.includes(buttonNumber)) {
+                      // Correct answer for current step
+                      showModal('Correct Answer! सही जवाब', currentStep.hint);
+                      markMuhawraSolved(buttonNumber);
+                      
+                      // Move to next step
+                      currentMuhawraStep++;
+                      
+                      // Update hint display for next step
+                      const nextStep = muhawraProgression[currentMuhawraStep - 1];
+                      if (nextStep) {
+                          setTimeout(() => {
+                              updateHint(nextStep.currentHint);
+                          }, 2000);
+                      }
+                      
+                      if (currentStep.completion) {
+                          // Final step completed
+                          setTimeout(() => {
+                              showModal('बधाई हो! 🎉', 'आपने महल के सभी मुहावरों को हल कर लिया है! आप बहुत अच्छे हैं!');
+                          }, 2000);
+                      } else if (currentStep.nextHint) {
+                          // Show next hint after delay
+                          setTimeout(() => {
+                              showModal('Next Hint अगला संकेत', currentStep.nextHint);
+                          }, 3000);
+                      }
+                      
+                  } else {
+                      // Check if it's a bonus muhawra
+                      const bonusMuhawra = bonusMuhawras.find(bonus => bonus.buttons.includes(buttonNumber));
+                      if (bonusMuhawra && !solvedMuhawras.has(buttonNumber)) {
+                          showModal('Bonus Answer! बोनस जवाब', bonusMuhawra.hint);
+                          markMuhawraSolved(buttonNumber);
+                      } else {
+                          // Wrong answer or already solved
+                          showModal('Try Again! पुनः प्रयास करें', 'यह सही जवाब नहीं है या पहले से हल हो चुका है। दूसरे बटन को आज़माएं।');
+                      }
+                  }
+              }
+             
+             // Track solved muhawras
+             function markMuhawraSolved(buttonNumber) {
+                 solvedMuhawras.add(buttonNumber);
+             }
+            
+            // --- Initialize ---
+            preloadImages();
+            showImage();
+            
+            // Re-adding the implementations from before, as they were getting cut off.
+            // This is just to ensure the code is complete.
+            function fullPreload() {
+                images.forEach(src => { new Image().src = src; });
+            }
+            function fullShowImage() {
+                carouselImage.src = images[currentImageIndex];
+            }
+            prevBtn.onclick = () => {
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                fullShowImage();
+            };
+            nextBtn.onclick = () => {
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                fullShowImage();
+            };
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') nextBtn.click();
+                if (e.key === 'ArrowLeft') prevBtn.click();
+            });
+            fullPreload();
+            fullShowImage();
+        });
+    </script>
+</body>
+</html>

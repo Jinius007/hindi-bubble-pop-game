@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hindi Official Language Quiz</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .animate-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .animate-bounce-slow {
+            animation: bounce-slow 3s infinite;
+        }
+        
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        .animate-scale-in {
+            animation: scaleIn 0.5s ease-out;
+        }
+        
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+        
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            to { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.3); }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(-45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+        }
+        
+        .menu-bg {
+            background: linear-gradient(-45deg, #ff9a56, #ff6b95, #c44569, #f8b500);
+            background-size: 400% 400%;
+            animation: gradientShift 10s ease infinite;
+        }
+        
+        .game-bg {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+            background-size: 400% 400%;
+            animation: gradientShift 12s ease infinite;
+        }
+        
+        .gameover-bg {
+            background: linear-gradient(-45deg, #ffd89b, #19547b, #667eea, #764ba2, #f093fb, #f5576c);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+        }
+        
+        .neon-border {
+            border: 2px solid;
+            border-image: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4) 1;
+            animation: neonGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes neonGlow {
+            from { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.7)); }
+            to { filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.7)); }
+        }
+        
+        .hindi-text {
+            font-family: 'Noto Sans Devanagari', serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFloat 6s infinite linear;
+        }
+        
+        @keyframes particleFloat {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+        
+        .button-hover-effect {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .button-hover-effect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .button-hover-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .button-hover-effect:hover::before {
+            left: 100%;
+        }
+        
+        .progress-glow {
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.6);
+        }
+        
+        .score-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .score-badge::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .icon-bounce {
+            display: inline-block;
+            animation: iconBounce 2s infinite;
+        }
+        
+        @keyframes iconBounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        .question-enter {
+            animation: questionEnter 0.8s ease-out;
+        }
+        
+        @keyframes questionEnter {
+            0% {
+                transform: scale(0.5) rotate(-10deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1) rotate(5deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container" class="min-h-screen relative overflow-hidden"></div>
+    <div id="particles-container" class="fixed inset-0 pointer-events-none z-0"></div>
+
+    <!-- Instructions Modal -->
+    <div id="instructionsModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50" style="display: none;">
+        <div class="glass-card rounded-3xl p-8 text-center max-w-4xl w-full animate-scale-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-black text-white">🇮🇳 Hindi Official Language Quiz</h2>
+                <button onclick="game.hideInstructions()" class="text-white text-3xl font-bold hover:text-yellow-300">&times;</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="glass-card rounded-2xl p-6 neon-border">
+                    <h3 class="text-xl font-bold text-yellow-300 mb-4">🎮 How to Play:</h3>
+                    <ul class="text-white text-left space-y-2">
+                        <li>🎯 Match Hindi words with their English meanings</li>
+                        <li>⏰ You have 30 seconds to answer as many as possible</li>
+                        <li>✅ Click the correct English translation</li>
+                        <li>🏆 Score points for each correct answer</li>
+                        <li>⚡ Speed matters - faster answers = more points!</li>
+                    </ul>
+                </div>
+                <div class="glass-card rounded-2xl p-6 neon-border">
+                    <h3 class="text-xl font-bold text-yellow-300 mb-4">🎮 कैसे खेलें:</h3>
+                    <ul class="text-white text-left space-y-2">
+                        <li>🎯 हिंदी शब्दों को उनके अंग्रेजी अर्थ से मिलाएं</li>
+                        <li>⏰ जितने संभव हो उतने जवाब देने के लिए 30 सेकंड</li>
+                        <li>✅ सही अंग्रेजी अनुवाद पर क्लिक करें</li>
+                        <li>🏆 हर सही जवाब के लिए अंक प्राप्त करें</li>
+                        <li>⚡ गति मायने रखती है - तेज़ जवाब = अधिक अंक!</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button
+                onclick="game.hideInstructions()"
+                class="button-hover-effect bg-gradient-to-r from-green-400 to-blue-500 text-white px-8 py-4 rounded-full font-bold text-xl shadow-2xl"
+            >
+                Close / बंद करें
+            </button>
+        </div>
+    </div>
+
+    <script>
+        class HindiLanguageGame {
+            constructor() {
+                this.gameState = 'menu';
+                this.score = 0;
+                this.timeLeft = 30;
+                this.currentQuestion = 0;
+                this.selectedAnswer = null;
+                this.showResult = false;
+                this.questionStartTime = null;
+                this.timer = null;
+                this.shuffledQuestions = [];
+                
+                this.questions = [
+                    {
+                        hindi: "अधिसूचना",
+                        icon: "📢",
+                        options: ["Notification", "Information", "Declaration", "Announcement"],
+                        correct: 0
+                    },
+                    {
+                        hindi: "कार्यकारी",
+                        icon: "👨‍💼",
+                        options: ["Worker", "Executive", "Manager", "Officer"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "अनुमोदन",
+                        icon: "✅",
+                        options: ["Permission", "Approval", "Agreement", "Consent"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "निविदा",
+                        icon: "📋",
+                        options: ["Request", "Application", "Tender", "Proposal"],
+                        correct: 2
+                    },
+                    {
+                        hindi: "संशोधन",
+                        icon: "✏️",
+                        options: ["Research", "Amendment", "Correction", "Revision"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "प्राधिकरण",
+                        icon: "🏛️",
+                        options: ["Authority", "Government", "Department", "Ministry"],
+                        correct: 0
+                    },
+                    {
+                        hindi: "अभिलेख",
+                        icon: "📁",
+                        options: ["Document", "Record", "File", "Paper"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "निर्देशालय",
+                        icon: "🏢",
+                        options: ["Directory", "Directorate", "Department", "Division"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "आयोग",
+                        icon: "⚖️",
+                        options: ["Committee", "Commission", "Board", "Council"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "परिपत्र",
+                        icon: "📨",
+                        options: ["Letter", "Notice", "Circular", "Message"],
+                        correct: 2
+                    },
+                    {
+                        hindi: "प्रतिवेदन",
+                        icon: "📊",
+                        options: ["Report", "Statement", "Summary", "Account"],
+                        correct: 0
+                    },
+                    {
+                        hindi: "स्वीकृति",
+                        icon: "👍",
+                        options: ["Acceptance", "Approval", "Sanction", "Permission"],
+                        correct: 0
+                    },
+                    {
+                        hindi: "नियुक्ति",
+                        icon: "🤝",
+                        options: ["Meeting", "Appointment", "Assignment", "Employment"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "कार्यवाही",
+                        icon: "⚡",
+                        options: ["Work", "Action", "Proceedings", "Process"],
+                        correct: 2
+                    },
+                    {
+                        hindi: "अनुपालन",
+                        icon: "📋",
+                        options: ["Following", "Compliance", "Adherence", "Observance"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "निरीक्षण",
+                        icon: "🔍",
+                        options: ["Observation", "Inspection", "Examination", "Review"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "प्राक्कलन",
+                        icon: "💰",
+                        options: ["Calculation", "Estimate", "Budget", "Assessment"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "अनुरोध",
+                        icon: "🙏",
+                        options: ["Request", "Appeal", "Petition", "Application"],
+                        correct: 0
+                    },
+                    {
+                        hindi: "संकल्प",
+                        icon: "📜",
+                        options: ["Decision", "Resolution", "Determination", "Resolve"],
+                        correct: 1
+                    },
+                    {
+                        hindi: "प्रस्ताव",
+                        icon: "💡",
+                        options: ["Proposal", "Suggestion", "Plan", "Scheme"],
+                        correct: 0
+                    }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.createParticles();
+                this.render();
+            }
+            
+            createParticles() {
+                const particlesContainer = document.getElementById('particles-container');
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 6 + 's';
+                    particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+            
+            startGame() {
+                this.gameState = 'playing';
+                this.score = 0;
+                this.timeLeft = 30;
+                this.currentQuestion = 0;
+                this.selectedAnswer = null;
+                this.showResult = false;
+                this.shuffledQuestions = this.shuffleArray(this.questions);
+                this.questionStartTime = Date.now();
+                this.render();
+                this.startTimer();
+            }
+            
+            startTimer() {
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    if (this.timeLeft <= 0) {
+                        this.gameState = 'gameOver';
+                        clearInterval(this.timer);
+                        this.render();
+                    } else {
+                        this.updateTimer();
+                    }
+                }, 1000);
+            }
+            
+            updateTimer() {
+                const timerElement = document.getElementById('timer');
+                const scoreElement = document.getElementById('score-display');
+                if (timerElement) {
+                    timerElement.textContent = this.timeLeft + 's';
+                    if (this.timeLeft <= 10) {
+                        timerElement.className = 'text-3xl font-bold text-red-400 animate-pulse';
+                        timerElement.parentElement.classList.add('animate-shake');
+                    } else {
+                        timerElement.className = 'text-3xl font-bold text-white';
+                        timerElement.parentElement.classList.remove('animate-shake');
+                    }
+                }
+                
+                if (scoreElement) {
+                    scoreElement.textContent = this.score;
+                }
+                
+                const progressBar = document.getElementById('progress-bar');
+                if (progressBar) {
+                    const progress = ((30 - this.timeLeft) / 30) * 100;
+                    progressBar.style.width = progress + '%';
+                }
+            }
+            
+            nextQuestion() {
+                if (this.currentQuestion < this.shuffledQuestions.length - 1) {
+                    this.currentQuestion++;
+                    this.selectedAnswer = null;
+                    this.showResult = false;
+                    this.questionStartTime = Date.now();
+                    this.render();
+                }
+            }
+            
+            handleAnswer(answerIndex) {
+                if (this.selectedAnswer !== null) return;
+                
+                this.selectedAnswer = answerIndex;
+                this.showResult = true;
+                
+                if (answerIndex === this.shuffledQuestions[this.currentQuestion].correct) {
+                    this.score++;
+                }
+                
+                this.updateAnswerButtons();
+                
+                setTimeout(() => {
+                    this.nextQuestion();
+                }, 1500);
+            }
+            
+            updateAnswerButtons() {
+                const currentQ = this.shuffledQuestions[this.currentQuestion];
+                const buttons = document.querySelectorAll('.answer-btn');
+                
+                buttons.forEach((button, index) => {
+                    button.disabled = true;
+                    
+                    if (index === currentQ.correct) {
+                        button.className = 'answer-btn w-full p-4 rounded-2xl font-semibold text-lg transition-all duration-300 bg-gradient-to-r from-green-400 to-green-600 text-white shadow-lg transform scale-105';
+                        const checkIcon = button.querySelector('.result-icon');
+                        if (checkIcon) {
+                            checkIcon.innerHTML = '✨';
+                            checkIcon.style.display = 'inline';
+                            checkIcon.classList.add('animate-bounce-slow');
+                        }
+                    } else if (index === this.selectedAnswer && this.selectedAnswer !== currentQ.correct) {
+                        button.className = 'answer-btn w-full p-4 rounded-2xl font-semibold text-lg transition-all duration-300 bg-gradient-to-r from-red-400 to-red-600 text-white shadow-lg animate-shake';
+                        const xIcon = button.querySelector('.result-icon');
+                        if (xIcon) {
+                            xIcon.innerHTML = '💥';
+                            xIcon.style.display = 'inline';
+                        }
+                    } else {
+                        button.className = 'answer-btn w-full p-4 rounded-2xl font-semibold text-lg transition-all duration-300 bg-gradient-to-r from-gray-300 to-gray-400 text-gray-600 opacity-60';
+                    }
+                });
+            }
+            
+            resetGame() {
+                this.gameState = 'menu';
+                this.score = 0;
+                this.timeLeft = 30;
+                this.currentQuestion = 0;
+                this.selectedAnswer = null;
+                this.showResult = false;
+                if (this.timer) {
+                    clearInterval(this.timer);
+                }
+                this.render();
+            }
+
+            showInstructions() {
+                document.getElementById('instructionsModal').style.display = 'flex';
+            }
+
+            hideInstructions() {
+                document.getElementById('instructionsModal').style.display = 'none';
+            }
+            
+            getScoreMessage() {
+                if (this.score >= 15) return "🌟 Outstanding! You're a Hindi Master! 🌟";
+                if (this.score >= 10) return "🎉 Great job! Very impressive! 🎉";
+                if (this.score >= 5) return "💪 Good effort! Keep practicing! 💪";
+                return "📚 Keep learning! Practice makes perfect! 📚";
+            }
+            
+            render() {
+                const container = document.getElementById('game-container');
+                
+                if (this.gameState === 'menu') {
+                    container.innerHTML = `
+                        <div class="min-h-screen menu-bg flex items-center justify-center p-4 relative z-10">
+                            <div class="glass-card rounded-3xl p-8 text-center max-w-4xl w-full animate-scale-in">
+                                <div class="text-8xl mb-6 animate-float">🇮🇳</div>
+                                <h1 class="text-4xl font-black text-white mb-4 text-shadow-lg">
+                                    Hindi Official Language
+                                </h1>
+                                <h2 class="text-2xl font-bold text-yellow-300 mb-6 animate-glow">
+                                    Lightning Quiz ⚡
+                                </h2>
+                                
+                                <!-- Instructions Section -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                    <div class="glass-card rounded-2xl p-6 neon-border">
+                                        <h3 class="text-xl font-bold text-yellow-300 mb-4">🎮 How to Play:</h3>
+                                        <ul class="text-white text-left space-y-2">
+                                            <li>🎯 Match Hindi words with their English meanings</li>
+                                            <li>⏰ You have 30 seconds to answer as many as possible</li>
+                                            <li>✅ Click the correct English translation</li>
+                                            <li>🏆 Score points for each correct answer</li>
+                                            <li>⚡ Speed matters - faster answers = more points!</li>
+                                        </ul>
+                                    </div>
+                                    <div class="glass-card rounded-2xl p-6 neon-border">
+                                        <h3 class="text-xl font-bold text-yellow-300 mb-4">🎮 कैसे खेलें:</h3>
+                                        <ul class="text-white text-left space-y-2">
+                                            <li>🎯 हिंदी शब्दों को उनके अंग्रेजी अर्थ से मिलाएं</li>
+                                            <li>⏰ जितने संभव हो उतने जवाब देने के लिए 30 सेकंड</li>
+                                            <li>✅ सही अंग्रेजी अनुवाद पर क्लिक करें</li>
+                                            <li>🏆 हर सही जवाब के लिए अंक प्राप्त करें</li>
+                                            <li>⚡ गति मायने रखती है - तेज़ जवाब = अधिक अंक!</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="glass-card rounded-2xl p-6 mb-8 neon-border">
+                                    <div class="flex items-center justify-center mb-3">
+                                        <span class="text-2xl animate-bounce-slow">⏰</span>
+                                        <span class="font-black text-2xl text-yellow-300 ml-2">30 Second Challenge</span>
+                                    </div>
+                                    <p class="text-white font-semibold">
+                                        Answer as many questions as you can before time runs out!
+                                    </p>
+                                </div>
+                                <button
+                                    onclick="game.startGame()"
+                                    class="button-hover-effect bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white px-10 py-5 rounded-full font-black text-xl shadow-2xl w-full relative overflow-hidden"
+                                >
+                                    <span class="relative z-10">🚀 START GAME 🚀</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else if (this.gameState === 'gameOver') {
+                    container.innerHTML = `
+                        <div class="min-h-screen gameover-bg flex items-center justify-center p-4 relative z-10">
+                            <div class="glass-card rounded-3xl p-8 text-center max-w-md w-full animate-scale-in">
+                                <div class="text-8xl mb-6 animate-float">🏆</div>
+                                <h2 class="text-4xl font-black text-white mb-6">Game Over!</h2>
+                                <div class="score-badge rounded-2xl p-8 mb-8 animate-glow">
+                                    <div class="flex items-center justify-center mb-3">
+                                        <span class="text-6xl font-black text-yellow-300 icon-bounce">${this.score}</span>
+                                    </div>
+                                    <p class="text-white font-bold text-xl">
+                                        ${this.score === 1 ? 'Correct Answer' : 'Correct Answers'}
+                                    </p>
+                                </div>
+                                <div class="text-white mb-8 text-lg font-bold">
+                                    ${this.getScoreMessage()}
+                                </div>
+                                <button
+                                    onclick="game.resetGame()"
+                                    class="button-hover-effect bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 text-white px-10 py-5 rounded-full font-black text-xl shadow-2xl w-full relative overflow-hidden"
+                                >
+                                    <span class="relative z-10">🎮 PLAY AGAIN 🎮</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else if (this.gameState === 'playing' && this.shuffledQuestions.length > 0) {
+                    const currentQ = this.shuffledQuestions[this.currentQuestion];
+                    const optionsHTML = currentQ.options.map((option, index) => `
+                        <button
+                            class="answer-btn w-full p-4 rounded-2xl font-semibold text-lg transition-all duration-300 button-hover-effect bg-gradient-to-r from-white to-gray-100 text-gray-800 shadow-lg border-2 border-white hover:border-yellow-300"
+                            onclick="game.handleAnswer(${index})"
+                        >
+                            <div class="flex items-center justify-between">
+                                <span class="relative z-10">${option}</span>
+                                <span class="result-icon relative z-10" style="display: none;"></span>
+                            </div>
+                        </button>
+                    `).join('');
+                    
+                    container.innerHTML = `
+                        <div class="min-h-screen game-bg flex items-center justify-center p-4 relative z-10">
+                            <div class="glass-card rounded-3xl p-6 max-w-lg w-full animate-slide-up">
+                                <!-- Header -->
+                                <div class="flex justify-between items-center mb-6">
+                                    <div class="flex items-center glass-card rounded-full px-4 py-2">
+                                        <span class="text-2xl animate-bounce-slow mr-2">⏰</span>
+                                        <span id="timer" class="${this.timeLeft <= 10 ? 'text-3xl font-bold text-red-400 animate-pulse' : 'text-3xl font-bold text-white'}">
+                                            ${this.timeLeft}s
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center glass-card rounded-full px-4 py-2">
+                                        <span class="text-2xl animate-bounce-slow mr-2">🏆</span>
+                                        <span id="score-display" class="text-3xl font-bold text-yellow-300">${this.score}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar -->
+                                <div class="w-full bg-white bg-opacity-30 rounded-full h-3 mb-8 overflow-hidden">
+                                    <div 
+                                        id="progress-bar"
+                                        class="bg-gradient-to-r from-yellow-400 via-pink-500 to-red-500 h-3 rounded-full transition-all duration-1000 progress-glow"
+                                        style="width: ${((30 - this.timeLeft) / 30) * 100}%"
+                                    ></div>
+                                </div>
+
+                                <!-- Question -->
+                                <div class="text-center mb-10 question-enter">
+                                    <div class="text-9xl mb-6 animate-float">${currentQ.icon}</div>
+                                    <div class="text-6xl font-black text-white mb-6 hindi-text animate-glow">
+                                        ${currentQ.hindi}
+                                    </div>
+                                    <p class="text-white font-bold text-xl opacity-90">Select the correct English translation:</p>
+                                </div>
+
+                                <!-- Options -->
+                                <div class="grid grid-cols-1 gap-4">
+                                    ${optionsHTML}
+                                </div>
+                                
+                                <!-- Instructions Button -->
+                                <div class="mt-6 text-center">
+                                    <button
+                                        onclick="game.showInstructions()"
+                                        class="button-hover-effect bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-xl"
+                                    >
+                                        📖 Show Instructions / निर्देश दिखाएं
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // Initialize game
+        const game = new HindiLanguageGame();
+    </script>
+</body>
+</html>
