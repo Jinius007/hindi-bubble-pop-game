@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon Drop Vocabulary</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        :root {
+            --game-bg: #87CEEB;
+            --conveyor-bg: #dcdcdc;
+            --rope-color: #8B4513;
+            --bucket-color: #a0522d;
+            --bucket-rim-color: #65340d;
+            --floor-color: #a0a0a0;
+            --text-color: #333;
+            --light-text: #fff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--game-bg);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conveyor-belt {
+            width: 100%;
+            height: 800px; /* Increased fall distance significantly */
+            background: #b0e0e6;
+            position: relative;
+            border-bottom: 5px solid #9ac9d1;
+            overflow: hidden; /* To contain the new rail graphics */
+        }
+
+        .conveyor-belt::before,
+        .conveyor-belt::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: #708090; /* Slate gray for a metallic look */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .conveyor-belt::before {
+            top: 10px;
+        }
+        
+        .conveyor-belt::after {
+            top: 190px;
+        }
+        
+        .floor {
+            width: 100%;
+            flex-grow: 1;
+            background: var(--floor-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .buckets-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px; /* Adjust as needed */
+            margin: 0 auto;
+        }
+
+        .bucket {
+            width: 130px;
+            height: 100px;
+            background: var(--bucket-color);
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            border: 5px solid var(--bucket-rim-color);
+            border-top: 10px solid var(--bucket-rim-color);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bucket-label {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+        }
+        
+        .balloon-entity {
+            position: absolute;
+            top: 20px;
+            width: 100px;
+            height: 180px; /* Balloon + Rope height */
+            will-change: transform;
+            cursor: pointer;
+            z-index: 2; /* Ensure balloons are above the rails */
+        }
+        
+        .rope {
+            position: absolute;
+            width: 12px; /* Thicker rope */
+            height: 60px;
+            background-color: var(--rope-color);
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 6px;
+        }
+        
+        .balloon {
+            position: absolute;
+            width: 100px;
+            height: 120px;
+            top: 60px; /* Below the rope */
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 5px;
+            color: var(--light-text);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* UI Styling */
+        .ui-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        #score, #timer { font-size: 1.5rem; font-weight: 600; }
+        
+        /* Modal for Start/End */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: opacity 0.3s;
+        }
+
+        .modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .modal-content h1 { font-size: 2.5rem; margin-bottom: 10px;}
+        .modal-content p { font-size: 1.2rem; margin-bottom: 20px; max-width: 400px;}
+        
+        .start-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .start-btn:hover { background: #45a049; }
+
+        .feedback-text {
+            position: absolute;
+            font-size: 2.5rem;
+            font-weight: bold;
+            opacity: 0;
+            z-index: 101;
+            transition: all 0.6s ease-out;
+            pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            transform: translateY(0);
+        }
+        .feedback-text.show {
+            opacity: 1;
+            transform: translateY(-60px);
+        }
+
+        /* Instruction Grid Styles */
+        .instructions-grid {
+            margin: 20px 0;
+        }
+
+        .instruction-section {
+            margin-bottom: 20px;
+        }
+
+        .instruction-section h3 {
+            color: #333;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .instruction-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .instruction-column h4 {
+            color: #4CAF50;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .instruction-column ul {
+            text-align: left;
+            list-style: none;
+            padding: 0;
+        }
+
+        .instruction-column li {
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .instruction-columns {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .modal-content h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- GAME UI -->
+        <div class="ui-container">
+            <div>
+                <span id="score-label">Score:</span>
+                <span id="score">0</span>
+            </div>
+            <div>
+                <span id="timer-label">Next Change:</span>
+                <span id="timer">1:00</span>
+            </div>
+        </div>
+
+        <!-- GAME WORLD -->
+        <div class="conveyor-belt" id="conveyor-belt"></div>
+        <div class="floor">
+            <div class="buckets-container" id="buckets-container"></div>
+        </div>
+
+        <div id="feedback-text" class="feedback-text"></div>
+        
+        <!-- START/END MODAL -->
+        <div class="modal" id="start-modal">
+            <div class="modal-content">
+                <h1>🎈 Balloon Drop Vocab / बैलून ड्रॉप शब्दावली</h1>
+                <div class="instructions-grid">
+                    <div class="instruction-section">
+                        <h3>🎮 How to Play / कैसे खेलें:</h3>
+                        <div class="instruction-columns">
+                            <div class="instruction-column">
+                                <h4>English:</h4>
+                                <ul>
+                                    <li>🎈 Click on balloons or their ropes to drop them</li>
+                                    <li>🎯 Match the Hindi word on the balloon to the correct English bucket</li>
+                                    <li>⏰ Buckets change every 1 minute</li>
+                                    <li>✅ Correct matches: +10 points</li>
+                                    <li>❌ Wrong matches: -5 points</li>
+                                    <li>💨 Missing the bucket: -2 points</li>
+                                </ul>
+                            </div>
+                            <div class="instruction-column">
+                                <h4>हिंदी:</h4>
+                                <ul>
+                                    <li>🎈 बैलून या उनकी रस्सी पर क्लिक करके उन्हें गिराएं</li>
+                                    <li>🎯 बैलून पर लिखे हिंदी शब्द को सही अंग्रेजी बाल्टी से मिलाएं</li>
+                                    <li>⏰ बाल्टियां हर 1 मिनट में बदलती हैं</li>
+                                    <li>✅ सही मैच: +10 अंक</li>
+                                    <li>❌ गलत मैच: -5 अंक</li>
+                                    <li>💨 बाल्टी से चूकना: -2 अंक</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="start-btn" id="start-btn">▶️ Start Game / खेल शुरू करें</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const conveyorBelt = document.getElementById('conveyor-belt');
+            const bucketsContainer = document.getElementById('buckets-container');
+            const scoreEl = document.getElementById('score');
+            const timerEl = document.getElementById('timer');
+            const startModal = document.getElementById('start-modal');
+            const startBtn = document.getElementById('start-btn');
+            const feedbackTextEl = document.getElementById('feedback-text');
+
+            // Game Constants
+            const BALLOON_SPEED = 0.8;
+            const BALLOON_SPAWN_INTERVAL = 2500; // ms
+            const NUM_BUCKETS = 6;
+            const GRAVITY = 0.2;
+            const GAME_DURATION = 60; // 1 minute in seconds
+            const BALLOON_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+            
+            const allWordPairs = [
+                { en: 'Ministry', hi: 'मंत्रालय' }, { en: 'Department', hi: ' विभाग' },
+                { en: 'Notification', hi: 'अधिसूचना' }, { en: 'Constitution', hi: 'संविधान' },
+                { en: 'Secretary', hi: 'सचिव' }, { en: 'Commissioner', hi: 'आयुक्त' },
+                { en: 'Act (Law)', hi: 'अधिनियम' }, { en: 'Bill', hi: 'विधेयक' },
+                { en: 'Resolution', hi: 'प्रस्ताव' }, { en: 'Office', hi: 'कार्यालय' },
+                { en: 'Order', hi: 'आदेश' }, { en: 'Circular', hi: 'परिपत्र' }
+            ];
+
+            // Game State
+            let score = 0;
+            let gameTime = GAME_DURATION;
+            let isGameActive = false;
+            let animationFrameId;
+            let balloonSpawnTimer, gameTimerInterval;
+            let activeBalloons = [];
+            let bucketWordPairs = [];
+            let bucketElements = [];
+            let nextBalloonIndex = 0;
+
+            // Sound Effects
+            const synth = new Tone.Synth().toDestination();
+            const hitSound = () => synth.triggerAttackRelease("C5", "8n");
+            const missSound = () => synth.triggerAttackRelease("C3", "8n");
+
+            // Utility Functions
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            // Game Setup
+            function setupBuckets() {
+                bucketsContainer.innerHTML = '';
+                bucketElements = [];
+                let shuffledPairs = [...allWordPairs];
+                shuffleArray(shuffledPairs);
+                bucketWordPairs = shuffledPairs.slice(0, NUM_BUCKETS);
+
+                for (const pair of bucketWordPairs) {
+                    const bucket = document.createElement('div');
+                    bucket.className = 'bucket';
+                    const label = document.createElement('div');
+                    label.className = 'bucket-label';
+                    label.textContent = pair.en;
+                    bucket.appendChild(label);
+                    bucketsContainer.appendChild(bucket);
+                    bucketElements.push({ element: bucket, pair: pair });
+                }
+            }
+            
+            function resetLevel() {
+                activeBalloons.forEach(b => b.element.remove());
+                activeBalloons = [];
+                setupBuckets();
+                gameTime = GAME_DURATION;
+                updateTimerDisplay();
+                nextBalloonIndex = 0;
+                shuffleArray(bucketWordPairs); // Shuffle for initial spawn order
+            }
+
+            // Game UI and Time
+            function updateTimerDisplay() {
+                const minutes = Math.floor(gameTime / 60);
+                const seconds = gameTime % 60;
+                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            function gameClockTick() {
+                gameTime--;
+                updateTimerDisplay();
+                if (gameTime <= 0) {
+                    resetLevel();
+                }
+            }
+
+            function updateScore(points, xPosition) {
+                score += points;
+                scoreEl.textContent = score;
+
+                feedbackTextEl.textContent = points > 0 ? `+${points}` : `${points}`;
+                feedbackTextEl.style.color = points > 0 ? '#2ecc71' : '#e74c3c';
+                feedbackTextEl.style.left = `${xPosition}px`;
+                feedbackTextEl.style.top = `${window.innerHeight - 150}px`;
+                feedbackTextEl.classList.add('show');
+                setTimeout(() => { feedbackTextEl.classList.remove('show'); }, 600);
+            }
+
+            // Balloon Mechanics
+            function createBalloon() {
+                if (!isGameActive) return;
+
+                // Cycle through the available words to ensure variety
+                if (nextBalloonIndex >= bucketWordPairs.length) {
+                    // Reshuffle for the next cycle
+                    shuffleArray(bucketWordPairs);
+                    nextBalloonIndex = 0;
+                }
+                const pair = bucketWordPairs[nextBalloonIndex];
+                nextBalloonIndex++;
+
+                const entity = document.createElement('div');
+                entity.className = 'balloon-entity';
+                const rope = document.createElement('div');
+                rope.className = 'rope';
+                const balloon = document.createElement('div');
+                balloon.className = 'balloon';
+                balloon.style.backgroundColor = BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)];
+                balloon.textContent = pair.hi;
+                entity.appendChild(rope);
+                entity.appendChild(balloon);
+                conveyorBelt.appendChild(entity);
+
+                const balloonData = {
+                    element: entity,
+                    pair: pair,
+                    x: window.innerWidth,
+                    y: 0,
+                    vy: 0, // vertical velocity
+                    falling: false,
+                };
+                activeBalloons.push(balloonData);
+
+                entity.addEventListener('click', () => handleBalloonDrop(balloonData), { once: true });
+            }
+
+            function handleBalloonDrop(balloonData) {
+                if (!isGameActive || balloonData.falling) return;
+                balloonData.falling = true;
+                balloonData.element.style.cursor = 'default';
+            }
+
+            // Main Game Loop
+            function gameLoop() {
+                if (!isGameActive) return;
+
+                const dropHeight = conveyorBelt.offsetHeight - 50; // Target Y for collision check
+                
+                [...activeBalloons].forEach(balloon => {
+                    if (balloon.falling) {
+                        // Apply gravity and update position
+                        balloon.vy += GRAVITY;
+                        balloon.y += balloon.vy;
+
+                        // Check for collision when it reaches bucket level
+                        if (balloon.y >= dropHeight) {
+                            const balloonRect = balloon.element.getBoundingClientRect();
+                            const balloonCenterX = balloonRect.left + balloonRect.width / 2;
+                            let hitBucket = false;
+                            
+                            for (const bucketData of bucketElements) {
+                                const bucketRect = bucketData.element.getBoundingClientRect();
+                                if (balloonCenterX >= bucketRect.left && balloonCenterX <= bucketRect.right) {
+                                    hitBucket = true;
+                                    if (bucketData.pair === balloon.pair) {
+                                        updateScore(10, balloonCenterX);
+                                        hitSound();
+                                    } else {
+                                        updateScore(-5, balloonCenterX);
+                                        missSound();
+                                    }
+                                    break;
+                                }
+                            }
+                            if (!hitBucket) {
+                                updateScore(-2, balloonCenterX);
+                                missSound();
+                            }
+                            
+                            // Cleanup after drop
+                            balloon.element.remove();
+                            activeBalloons = activeBalloons.filter(b => b !== balloon);
+                        }
+                    } else {
+                        // Move horizontally
+                        balloon.x -= BALLOON_SPEED;
+                        // Cleanup if off-screen
+                        if (balloon.x < -100) { 
+                            balloon.element.remove();
+                            activeBalloons = activeBalloons.filter(b => b !== balloon);
+                        }
+                    }
+                    
+                    // Update visual position
+                    balloon.element.style.transform = `translateX(${balloon.x}px) translateY(${balloon.y}px)`;
+                });
+
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+
+            // Game Start/Stop
+            function startGame() {
+                score = 0;
+                scoreEl.textContent = '0';
+                startModal.classList.add('hidden');
+                
+                // Clear any existing timers/intervals
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                if (balloonSpawnTimer) clearInterval(balloonSpawnTimer);
+                if (gameTimerInterval) clearInterval(gameTimerInterval);
+                
+                resetLevel(); 
+                
+                isGameActive = true;
+                gameLoop();
+                
+                balloonSpawnTimer = setInterval(createBalloon, BALLOON_SPAWN_INTERVAL);
+                gameTimerInterval = setInterval(gameClockTick, 1000);
+                createBalloon();
+            }
+
+            startBtn.addEventListener('click', () => {
+                Tone.start(); 
+                startGame();
+            });
+        });
+    </script>
+</body>
+</html>
+

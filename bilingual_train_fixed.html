@@ -22,9 +22,9 @@
 
         .game-container {
             width: 100vw;
-            min-height: 100vh;
+            height: 100vh;
             background: linear-gradient(135deg, #4ade80, #22c55e);
-            overflow-y: auto;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
@@ -79,10 +79,10 @@
 
         .game-area {
             position: relative;
+            flex: 1;
             background: #22c55e;
             overflow: hidden;
-            height: 500px;
-            min-height: 400px;
+            min-height: calc(100vh - 140px);
         }
 
         .overlay {
@@ -215,173 +215,19 @@
         }
 
         .instructions {
-            padding: 20px;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
+            padding: 16px;
+            background: #22c55e;
             color: white;
-            border-radius: 15px;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .instructions h3 {
             font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-            text-align: center;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-
-        .instructions p {
-            font-size: 15px;
-            line-height: 1.6;
             margin-bottom: 8px;
         }
 
-        .instructions h4 {
-            font-weight: bold;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-            color: #fbbf24;
-        }
-
-        /* Instructions Overlay Styles */
-        .instructions-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #4ade80, #22c55e);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .instructions-content {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            max-width: 800px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            text-align: center;
-        }
-
-        .instructions-content h2 {
-            color: #22c55e;
-            font-size: 2rem;
-            margin-bottom: 30px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .instructions-grid {
-            margin-bottom: 30px;
-        }
-
-        .instruction-section h3 {
-            color: #1f2937;
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-        }
-
-        .instruction-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        .instruction-column h4 {
-            color: #fbbf24;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .instruction-column ul {
-            text-align: left;
-            list-style: none;
-            padding: 0;
-        }
-
-        .instruction-column li {
-            margin-bottom: 12px;
-            padding: 8px 0;
-            border-bottom: 1px solid #e5e7eb;
+        .instructions p {
             font-size: 14px;
-            line-height: 1.5;
-        }
-
-        /* Instructions Button Styles */
-        .instructions-button-container {
-            text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            margin: 20px;
-        }
-
-        .instructions-btn {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .instructions-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(135deg, #2563eb, #1e40af);
-        }
-
-        /* Instructions Modal Styles */
-        .instructions-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-        }
-
-        .instructions-modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            color: #666;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .close-btn:hover {
-            color: #000;
+            line-height: 1.4;
         }
 
         @media (max-width: 768px) {
@@ -401,61 +247,6 @@
             .track {
                 width: 90%;
             }
-            
-            .instructions {
-                padding: 15px;
-                margin-top: 15px;
-            }
-            
-            .instructions .grid {
-                grid-template-columns: 1fr !important;
-                gap: 20px !important;
-            }
-            
-            .instructions h3 {
-                font-size: 1.1rem;
-                margin-bottom: 12px;
-            }
-            
-            .instructions h4 {
-                font-size: 1rem;
-                margin-bottom: 8px;
-            }
-            
-            .instructions p {
-                font-size: 13px;
-                line-height: 1.5;
-            }
-
-            .instructions-content {
-                padding: 20px;
-                margin: 10px;
-            }
-
-            .instructions-content h2 {
-                font-size: 1.5rem;
-                margin-bottom: 20px;
-            }
-
-            .instruction-columns {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .instruction-column li {
-                font-size: 13px;
-                margin-bottom: 10px;
-            }
-
-            .instructions-btn {
-                padding: 12px 24px;
-                font-size: 14px;
-            }
-
-            .instructions-modal-content {
-                margin: 10% auto;
-                padding: 20px;
-            }
         }
     </style>
 </head>
@@ -463,7 +254,7 @@
     <div class="game-container">
         <!-- Header -->
         <div class="header">
-            <div class="title">🚂 द्विभाषी ट्रेन / Bilingual Train</div>
+            <div class="title">🚂 Bilingual Train of Thought</div>
             <div class="stats">
                 <div class="stat">TIME <span id="timeLeft">6:00</span></div>
                 <div class="stat">WORDS CHANGE <span id="wordChangeTimer">1:30</span></div>
@@ -476,51 +267,16 @@
             </div>
         </div>
 
-        <!-- Instructions First -->
-        <div class="instructions-overlay" id="instructionsOverlay">
-            <div class="instructions-content">
-                <h2>🚂 द्विभाषी ट्रेन / Bilingual Train</h2>
-                <div class="instructions-grid">
-                    <div class="instruction-section">
-                        <h3>🎮 How to Play / कैसे खेलें:</h3>
-                        <div class="instruction-columns">
-                            <div class="instruction-column">
-                                <h4>English:</h4>
-                                <ul>
-                                    <li>🎯 Click junction circles to change direction: → (straight), ↑ (up track), ↓ (down track)</li>
-                                    <li>🚂 Guide Hindi tokens through the interconnected tracks to their English destinations</li>
-                                    <li>📚 Word sets change automatically every 40 seconds</li>
-                                    <li>⏱️ Get 6 correct matches to advance to the next level!</li>
-                                </ul>
-                            </div>
-                            <div class="instruction-column">
-                                <h4>हिंदी:</h4>
-                                <ul>
-                                    <li>🎯 दिशा बदलने के लिए जंक्शन सर्कल पर क्लिक करें: → (सीधा), ↑ (ऊपर ट्रैक), ↓ (नीचे ट्रैक)</li>
-                                    <li>🚂 हिंदी टोकन्स को जुड़े हुए ट्रैक्स के माध्यम से उनके अंग्रेजी गंतव्य तक पहुंचाएं</li>
-                                    <li>📚 शब्द सेट हर 40 सेकंड में स्वचालित रूप से बदलते हैं</li>
-                                    <li>⏱️ अगले स्तर तक पहुंचने के लिए 6 सही मैच प्राप्त करें!</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button class="start-btn" onclick="startGame()">
-                    ▶️ Start Game / खेल शुरू करें
-                </button>
-            </div>
-        </div>
-
         <!-- Game Area -->
-        <div class="game-area" id="gameArea" style="display: none;">
+        <div class="game-area" id="gameArea">
             <!-- Menu Overlay -->
             <div class="overlay" id="menuOverlay">
                 <div class="overlay-content">
-                    <h2>🚂 द्विभाषी ट्रेन / Bilingual Train</h2>
-                    <p>हिंदी टोकन्स को अंग्रेजी गंतव्य तक पहुंचाएं! / Guide Hindi tokens to English destinations!</p>
-                    <p style="font-size: 14px;">चुनौतीपूर्ण हिंदी शब्दावली के साथ! / Now featuring challenging Hindi vocabulary!</p>
+                    <h2>Bilingual Train of Thought</h2>
+                    <p>Guide Hindi tokens to English destinations!</p>
+                    <p style="font-size: 14px;">Now featuring challenging Hindi vocabulary!</p>
                     <button class="start-btn" onclick="startGame()">
-                        ▶️ Start Game / खेल शुरू करें
+                        ▶️ Start Game
                     </button>
                 </div>
             </div>
@@ -552,44 +308,15 @@
             <div class="track" style="top: 65%;"></div>
         </div>
 
-        <!-- Instructions Button -->
-        <div class="instructions-button-container">
-            <button class="instructions-btn" onclick="showInstructions()">
-                📖 Show Instructions / निर्देश दिखाएं
-            </button>
-        </div>
-
-        <!-- Instructions Modal -->
-        <div class="instructions-modal" id="instructionsModal">
-            <div class="instructions-modal-content">
-                <span class="close-btn" onclick="hideInstructions()">&times;</span>
-                <h2>🚂 द्विभाषी ट्रेन / Bilingual Train</h2>
-                <div class="instructions-grid">
-                    <div class="instruction-section">
-                        <h3>🎮 How to Play / कैसे खेलें:</h3>
-                        <div class="instruction-columns">
-                            <div class="instruction-column">
-                                <h4>English:</h4>
-                                <ul>
-                                    <li>🎯 Click junction circles to change direction: → (straight), ↑ (up track), ↓ (down track)</li>
-                                    <li>🚂 Guide Hindi tokens through the interconnected tracks to their English destinations</li>
-                                    <li>📚 Word sets change automatically every 40 seconds</li>
-                                    <li>⏱️ Get 6 correct matches to advance to the next level!</li>
-                                </ul>
-                            </div>
-                            <div class="instruction-column">
-                                <h4>हिंदी:</h4>
-                                <ul>
-                                    <li>🎯 दिशा बदलने के लिए जंक्शन सर्कल पर क्लिक करें: → (सीधा), ↑ (ऊपर ट्रैक), ↓ (नीचे ट्रैक)</li>
-                                    <li>🚂 हिंदी टोकन्स को जुड़े हुए ट्रैक्स के माध्यम से उनके अंग्रेजी गंतव्य तक पहुंचाएं</li>
-                                    <li>📚 शब्द सेट हर 40 सेकंड में स्वचालित रूप से बदलते हैं</li>
-                                    <li>⏱️ अगले स्तर तक पहुंचने के लिए 6 सही मैच प्राप्त करें!</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <p>
+                🎯 Click junction circles to change direction: → (straight), ↑ (up track), ↓ (down track)<br>
+                🚂 Guide Hindi tokens through the interconnected tracks to their English destinations<br>
+                📚 Word sets change automatically every 1 minute 30 seconds<br>
+                ⏱️ Get <span id="requiredMatchesText">6</span> correct matches to advance to the next level!
+            </p>
         </div>
     </div>
 
@@ -605,18 +332,14 @@
         let currentPairs = [];
         let correctMatches = 0;
         let wordSetIndex = 0;
-        let wordChangeTimer = 40; // Changed from 90 to 40 seconds
+        let wordChangeTimer = 90;
         let lastTokenTime = 0;
         let gameInterval;
         let spawnInterval;
+        let moveInterval;
 
-        // Base speed for trains - will increase with level
-        const BASE_TRAIN_SPEED = 0.08; // Reduced base speed for better readability
-        const SPEED_INCREASE_PER_LEVEL = 0.01; // Reduced speed increase per level
-        const MAX_TRAIN_SPEED = 0.18; // Reduced maximum speed limit
-
-        // Consistent color for all trains (not matching destinations)
-        const TRAIN_COLOR = '#1f2937'; // Dark gray color for all trains
+        // Fixed constant speed for all trains - reduced by 20% from original 0.15
+        const TRAIN_SPEED = 0.15; // Moderate constant speed
 
         // Enhanced word pairs database
         const wordPairs = [
@@ -698,12 +421,10 @@
             timeLeft = 360;
             correctMatches = 0;
             wordSetIndex = 0;
-            wordChangeTimer = 40;
+            wordChangeTimer = 90;
             lastTokenTime = 0;
             tokens = [];
             
-            document.getElementById('instructionsOverlay').style.display = 'none';
-            document.getElementById('gameArea').style.display = 'block';
             document.getElementById('menuOverlay').style.display = 'none';
             document.getElementById('pauseOverlay').style.display = 'none';
             document.getElementById('gameOverOverlay').style.display = 'none';
@@ -712,14 +433,6 @@
             updateUI();
             startGameLoop();
             startTokenSpawning();
-        }
-
-        function showInstructions() {
-            document.getElementById('instructionsModal').style.display = 'block';
-        }
-
-        function hideInstructions() {
-            document.getElementById('instructionsModal').style.display = 'none';
         }
 
         function togglePause() {
@@ -740,9 +453,7 @@
             gameState = 'menu';
             clearInterval(gameInterval);
             clearInterval(spawnInterval);
-            document.getElementById('instructionsOverlay').style.display = 'flex';
-            document.getElementById('gameArea').style.display = 'none';
-            document.getElementById('menuOverlay').style.display = 'none';
+            document.getElementById('menuOverlay').style.display = 'flex';
             document.getElementById('pauseOverlay').style.display = 'none';
             document.getElementById('gameOverOverlay').style.display = 'none';
             clearTokens();
@@ -778,7 +489,7 @@
                     renderTokens();
                     
                     showFeedback('New words incoming! 📚');
-                    wordChangeTimer = 40;
+                    wordChangeTimer = 90;
                     generateLevel();
                 }
                 
@@ -788,13 +499,20 @@
         }
 
         function startTokenSpawning() {
-            // Balanced spawn delay for good gameplay pace
-            const spawnDelay = 3000; // Increased to 3 seconds for better readability
+            // Reduced spawn rate - fewer trains
+            const spawnDelay = 2000; // 2 seconds between trains
             spawnInterval = setInterval(() => {
                 if (gameState === 'playing') {
                     generateToken();
                 }
             }, spawnDelay);
+            
+            // Force spawn first train after a short delay
+            setTimeout(() => {
+                if (gameState === 'playing') {
+                    generateToken();
+                }
+            }, 1000);
         }
 
         function generateToken() {
@@ -807,16 +525,29 @@
             const gameHeight = gameArea.clientHeight;
             const trackPositions = [gameHeight * 0.25, gameHeight * 0.45, gameHeight * 0.65];
             
+            // Check spacing - prevent overlapping trains
+            const minSpacing = 120; // Minimum distance between trains
+            const existingTrainOnTrack = tokens.find(token => 
+                token.currentTrack === startTrack && 
+                token.moving && 
+                token.x < 50 + minSpacing
+            );
+            
+            // If there's already a train too close, don't spawn a new one
+            if (existingTrainOnTrack) {
+                return;
+            }
+            
             const newToken = {
                 id: Date.now() + Math.random(),
                 hindi: pair.hindi,
                 english: pair.english,
-                color: TRAIN_COLOR, // Use consistent color
+                color: '#f59e0b', // All trains same color - bright orange
                 x: 50,
                 y: trackPositions[startTrack],
                 currentTrack: startTrack,
                 moving: true,
-                speed: Math.min(BASE_TRAIN_SPEED + (level - 1) * SPEED_INCREASE_PER_LEVEL, MAX_TRAIN_SPEED), // Progressive speed with cap
+                speed: TRAIN_SPEED, // Always use the constant reduced speed
                 spawnTime: Date.now()
             };
             
@@ -834,8 +565,8 @@
                 tokens = tokens.map(token => {
                     if (!token.moving) return token;
                     
-                    // Ensure speed remains constant with level-based progression and cap
-                    token.speed = Math.min(BASE_TRAIN_SPEED + (level - 1) * SPEED_INCREASE_PER_LEVEL, MAX_TRAIN_SPEED);
+                    // Ensure speed remains constant - never changes from the initial TRAIN_SPEED
+                    token.speed = TRAIN_SPEED;
                     
                     let newX = token.x + token.speed;
                     let newY = token.y;
@@ -891,7 +622,9 @@
                     showFeedback(`Level ${level}! More trains coming!`);
                     updateUI();
                 }
-            }, 80); // Increased from 50ms to 80ms for better readability and reaction time
+            });
+            
+            renderTokens();
         }
 
         function toggleJunction(junctionId) {

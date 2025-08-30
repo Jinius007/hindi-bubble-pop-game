@@ -1,9 +1,28 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khel Khel Mein Hindi Seekhein</title>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+        
+        // Track game clicks
+        function trackGameClick(gameName) {
+            gtag('event', 'game_click', {
+                'game_name': gameName,
+                'event_category': 'engagement',
+                'event_label': 'game_selection'
+            });
+        }
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -21,36 +40,28 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-        }
-
-        .header {
             text-align: center;
-            margin-bottom: 40px;
+        }
+
+        .title {
             color: white;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
+            font-weight: bold;
         }
 
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
             margin-top: 40px;
         }
 
-        .game-block {
+        .game-card {
             background: white;
             border-radius: 20px;
-            overflow: hidden;
+            padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
@@ -58,48 +69,21 @@
             color: inherit;
         }
 
-        .game-block:hover {
+        .game-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
 
-        .game-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .game-image::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .game-block:hover .game-image::before {
-            left: 100%;
-        }
-
-        .game-content {
-            padding: 25px;
-            text-align: center;
+        .game-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
         }
 
         .game-title {
             font-size: 1.5rem;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             color: #333;
         }
 
@@ -108,23 +92,8 @@
             line-height: 1.6;
         }
 
-        .play-button {
-            display: inline-block;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
-            margin-top: 15px;
-            font-weight: bold;
-            transition: transform 0.2s ease;
-        }
-
-        .game-block:hover .play-button {
-            transform: scale(1.05);
-        }
-
         @media (max-width: 768px) {
-            .header h1 {
+            .title {
                 font-size: 2rem;
             }
             
@@ -132,69 +101,52 @@
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
+            
+            .game-card {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎮 खेल खेल में हिंदी सीखें 🎮</h1>
-            <p>मज़ेदार गेम्स के साथ हिंदी भाषा सीखने का आनंद लें</p>
-        </div>
-
+        <h1 class="title">🎮 खेल खेल में हिंदी सीखें 🎮</h1>
+        
         <div class="games-grid">
-            <a href="Muhawra Mahal.html" class="game-block">
-                <div class="game-image">🏰</div>
-                <div class="game-content">
-                    <h3 class="game-title">मुहावरा महल</h3>
-                    <p class="game-description">हिंदी मुहावरों के महल में रोमांचक यात्रा</p>
-                    <div class="play-button">खेलें</div>
-                </div>
+            <a href="Muhawra Mahal.html" class="game-card" onclick="trackGameClick('Muhawra Mahal')">
+                <span class="game-icon">🏰</span>
+                <h2 class="game-title">मुहावरा महल</h2>
+                <p class="game-description">हिंदी मुहावरों को सीखें और समझें</p>
             </a>
-
-            <a href="hindi_whack_a_mole.html" class="game-block">
-                <div class="game-image">🔨</div>
-                <div class="game-content">
-                    <h3 class="game-title">हिंदी व्हैक-ए-मोल</h3>
-                    <p class="game-description">हिंदी शब्दों के साथ व्हैक-ए-मोल का मज़ा लें</p>
-                    <div class="play-button">खेलें</div>
-                </div>
+            
+            <a href="hindi_whack_a_mole.html" class="game-card" onclick="trackGameClick('Hindi Whack-A-Mole')">
+                <span class="game-icon">🔨</span>
+                <h2 class="game-title">हिंदी व्हैक-ए-मोल</h2>
+                <p class="game-description">अंग्रेजी शब्दों के हिंदी अर्थ ढूंढें</p>
             </a>
-
-            <a href="hindi_quiz_game.html" class="game-block">
-                <div class="game-image">❓</div>
-                <div class="game-content">
-                    <h3 class="game-title">हिंदी क्विज</h3>
-                    <p class="game-description">हिंदी भाषा के बारे में अपना ज्ञान जांचें</p>
-                    <div class="play-button">खेलें</div>
-                </div>
+            
+            <a href="hindi_quiz_game.html" class="game-card" onclick="trackGameClick('Hindi Quiz')">
+                <span class="game-icon">❓</span>
+                <h2 class="game-title">हिंदी क्विज</h2>
+                <p class="game-description">हिंदी भाषा के बारे में जानें</p>
             </a>
-
-            <a href="realistic_bubble_game.html" class="game-block">
-                <div class="game-image">💭</div>
-                <div class="game-content">
-                    <h3 class="game-title">बुलबुला खेल</h3>
-                    <p class="game-description">हिंदी शब्दों के बुलबुले फोड़ें और सीखें</p>
-                    <div class="play-button">खेलें</div>
-                </div>
+            
+            <a href="realistic_bubble_game.html" class="game-card" onclick="trackGameClick('Bubble Pop')">
+                <span class="game-icon">💭</span>
+                <h2 class="game-title">बुलबुला पॉप</h2>
+                <p class="game-description">हिंदी-अंग्रेजी शब्द जोड़े बनाएं</p>
             </a>
-
-            <a href="bilingual_train_fixed.html" class="game-block">
-                <div class="game-image">🚂</div>
-                <div class="game-content">
-                    <h3 class="game-title">द्विभाषी ट्रेन</h3>
-                    <p class="game-description">हिंदी और अंग्रेजी शब्दों के साथ ट्रेन की सवारी करें</p>
-                    <div class="play-button">खेलें</div>
-                </div>
+            
+                            <a href="balloons and buckets game.html" class="game-card" onclick="trackGameClick('Balloons and Buckets')">
+                <span class="game-icon">🎈</span>
+                <h2 class="game-title">बैलून और बाल्टी</h2>
+                <p class="game-description">हिंदी शब्दों को सही अंग्रेजी बाल्टी में गिराएं</p>
             </a>
-
-            <a href="Hindi paryayvachi - candy crush.html" class="game-block">
-                <div class="game-image">🍬</div>
-                <div class="game-content">
-                    <h3 class="game-title">पर्यायवाची कैंडी क्रश</h3>
-                    <p class="game-description">हिंदी पर्यायवाची शब्दों के साथ कैंडी क्रश</p>
-                    <div class="play-button">खेलें</div>
-                </div>
+            
+            <a href="Hindi paryayvachi - candy crush.html" class="game-card" onclick="trackGameClick('Paryayvachi Candy Crush')">
+                <span class="game-icon">🍬</span>
+                <h2 class="game-title">पर्यायवाची कैंडी क्रश</h2>
+                <p class="game-description">समान अर्थ वाले शब्दों को मिलाएं</p>
             </a>
         </div>
     </div>
