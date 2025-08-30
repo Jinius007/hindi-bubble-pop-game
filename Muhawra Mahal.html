@@ -107,18 +107,76 @@
         </div>
     </div>
 
+    <!-- Instructions Modal -->
+    <div id="instructions-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <h1 class="text-3xl font-bold text-center mb-6 text-blue-600">🏰 मुहावरा महल / Muhawra Mahal</h1>
+            
+            <div class="space-y-6">
+                                 <div class="bg-blue-50 p-4 rounded-lg">
+                     <h2 class="text-xl font-semibold mb-3 text-blue-800">🎯 How to Play / कैसे खेलें</h2>
+                     <div class="grid md:grid-cols-2 gap-4">
+                         <div>
+                             <h3 class="font-semibold text-blue-700 mb-2">English Instructions:</h3>
+                             <ol class="list-decimal list-inside space-y-2 text-sm">
+                                 <li>Explore the 4 rooms in the Muhawra Mahal</li>
+                                 <li>At each round you will be given the meaning of a muhawra, you must identify the muhawra from the meaning and find an object that is present in the actual muhawra</li>
+                                 <li>The buttons represent the numbered objects in the Muhawra Mahal</li>
+                                 <li>For each round, identify the object and click on the number of the object to proceed to next round</li>
+                             </ol>
+                         </div>
+                         <div>
+                             <h3 class="font-semibold text-blue-700 mb-2">हिंदी निर्देश:</h3>
+                             <ol class="list-decimal list-inside space-y-2 text-sm">
+                                 <li>मुहावरा महल के 4 कमरों का पता लगाएं</li>
+                                 <li>हर राउंड में आपको एक मुहावरे का मतलब दिया जाएगा, आपको उस मतलब से मुहावरा पहचानना होगा और वह वस्तु ढूंढनी होगी जो वास्तविक मुहावरे में मौजूद है</li>
+                                 <li>बटन मुहावरा महल में नंबर वाली वस्तुओं का प्रतिनिधित्व करते हैं</li>
+                                 <li>हर राउंड के लिए, वस्तु को पहचानें और अगले राउंड में जाने के लिए उस वस्तु के नंबर पर क्लिक करें</li>
+                             </ol>
+                         </div>
+                     </div>
+                 </div>
+                
+                                 <div class="bg-yellow-50 p-4 rounded-lg">
+                     <h3 class="font-semibold text-yellow-800 mb-2">⚠️ Important / महत्वपूर्ण</h3>
+                     <p class="text-sm text-yellow-700">The image of the rooms may take sometime to load, please keep patience.</p>
+                     <p class="text-sm text-yellow-700 mt-2">कमरों की छवि लोड होने में कुछ समय लग सकता है, कृपया धैर्य रखें।</p>
+                 </div>
+            </div>
+            
+            <div class="flex justify-center mt-6">
+                <button id="start-game-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors">
+                    🎮 Start Game / खेल शुरू करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Message -->
+    <div id="loading-message" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-40 hidden">
+        <div class="flex items-center space-x-2">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <span>Loading images... / छवियां लोड हो रही हैं...</span>
+        </div>
+    </div>
+
+    <!-- Instructions Button -->
+    <button id="instructions-btn" class="fixed top-4 right-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-40 hidden">
+        📖 Instructions / निर्देश
+    </button>
+
     <div id="app-container" class="h-screen w-screen flex flex-col">
         <!-- Top 80%: Image Carousel -->
         <div id="carousel-container" class="relative h-4/5 w-full bg-gray-900">
             <img id="carouselImage" src="" alt="Carousel Image">
-                         <div id="prevBtn" class="nav-arrow left">← पिछला कमरा</div>
-             <div id="nextBtn" class="nav-arrow right">अगला कमरा →</div>
+            <div id="prevBtn" class="nav-arrow left">← पिछला कमरा</div>
+            <div id="nextBtn" class="nav-arrow right">अगला कमरा →</div>
         </div>
 
-                 <!-- Bottom 20%: Button Grid -->
-                  <div id="button-grid-container" class="h-1/5 w-full bg-white p-2 sm:p-4 flex items-center justify-center border-t-2 border-gray-200">
-              <div id="buttonGrid" class="grid grid-cols-8 sm:grid-cols-12 gap-2 w-full max-w-6xl"></div>
-          </div>
+        <!-- Bottom 20%: Button Grid -->
+        <div id="button-grid-container" class="h-1/5 w-full bg-white p-2 sm:p-4 flex items-center justify-center border-t-2 border-gray-200">
+            <div id="buttonGrid" class="grid grid-cols-8 sm:grid-cols-12 gap-2 w-full max-w-6xl"></div>
+        </div>
     </div>
 
     <script>
@@ -133,13 +191,60 @@
             const carouselImage = document.getElementById('carouselImage');
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
-                                      const buttonGrid = document.getElementById('buttonGrid');
-             const hintDisplay = document.getElementById('hint-display');
-             const currentHintText = document.getElementById('current-hint-text');
-             const feedbackModal = document.getElementById('feedback-modal');
-             const feedbackTitle = document.getElementById('feedback-title');
-             const feedbackText = document.getElementById('feedback-text');
-             const closeModalBtn = document.getElementById('close-modal-btn');
+            const buttonGrid = document.getElementById('buttonGrid');
+            const hintDisplay = document.getElementById('hint-display');
+            const currentHintText = document.getElementById('current-hint-text');
+            const feedbackModal = document.getElementById('feedback-modal');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackText = document.getElementById('feedback-text');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            
+            // Instruction modal elements
+            const instructionsModal = document.getElementById('instructions-modal');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const instructionsBtn = document.getElementById('instructions-btn');
+            const loadingMessage = document.getElementById('loading-message');
+            const appContainer = document.getElementById('app-container');
+            
+            // Initially hide the game interface
+            appContainer.style.display = 'none';
+            hintDisplay.style.display = 'none';
+            
+            // Show loading message when images are loading
+            function showLoadingMessage() {
+                loadingMessage.classList.remove('hidden');
+            }
+            
+            function hideLoadingMessage() {
+                loadingMessage.classList.add('hidden');
+            }
+            
+            // Start game function
+            function startGame() {
+                instructionsModal.style.display = 'none';
+                appContainer.style.display = 'flex';
+                hintDisplay.style.display = 'block';
+                instructionsBtn.classList.remove('hidden');
+                
+                // Show loading message
+                showLoadingMessage();
+                
+                // Preload images and show first image
+                preloadImages();
+                setTimeout(() => {
+                    showImage();
+                    hideLoadingMessage();
+                }, 2000);
+            }
+            
+            // Show instructions again
+            function showInstructions() {
+                instructionsModal.style.display = 'flex';
+            }
+            
+            // Event listeners
+            startGameBtn.addEventListener('click', startGame);
+            instructionsBtn.addEventListener('click', showInstructions);
 
 
              // --- Hint Display Logic ---
@@ -165,11 +270,46 @@
 
 
             // --- Carousel Logic ---
-            function preloadImages() { /* ... preloading logic ... */ }
-            function showImage() { /* ... show image logic ... */ }
-            nextBtn.addEventListener('click', () => { /* ... next logic ... */ });
-            prevBtn.addEventListener('click', () => { /* ... prev logic ... */ });
-            document.addEventListener('keydown', (e) => { /* ... keydown logic ... */ });
+            function preloadImages() {
+                images.forEach(src => {
+                    const img = new Image();
+                    img.onload = () => {
+                        console.log('Image loaded:', src);
+                    };
+                    img.onerror = () => {
+                        console.log('Image failed to load:', src);
+                    };
+                    img.src = src;
+                });
+            }
+            
+            function showImage() {
+                carouselImage.src = images[currentImageIndex];
+                carouselImage.onload = () => {
+                    hideLoadingMessage();
+                };
+                carouselImage.onerror = () => {
+                    console.log('Failed to load image:', images[currentImageIndex]);
+                    hideLoadingMessage();
+                };
+            }
+            
+            nextBtn.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                showLoadingMessage();
+                showImage();
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                showLoadingMessage();
+                showImage();
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') nextBtn.click();
+                if (e.key === 'ArrowLeft') prevBtn.click();
+            });
 
                          // --- Button Grid Logic ---
              let currentMuhawraStep = 1; // Track current step in progression
@@ -284,31 +424,8 @@
              }
             
             // --- Initialize ---
-            preloadImages();
-            showImage();
-            
-            // Re-adding the implementations from before, as they were getting cut off.
-            // This is just to ensure the code is complete.
-            function fullPreload() {
-                images.forEach(src => { new Image().src = src; });
-            }
-            function fullShowImage() {
-                carouselImage.src = images[currentImageIndex];
-            }
-            prevBtn.onclick = () => {
-                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
-                fullShowImage();
-            };
-            nextBtn.onclick = () => {
-                currentImageIndex = (currentImageIndex + 1) % images.length;
-                fullShowImage();
-            };
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowRight') nextBtn.click();
-                if (e.key === 'ArrowLeft') prevBtn.click();
-            });
-            fullPreload();
-            fullShowImage();
+            // The game will start when the user clicks "Start Game" button
+            // Images will be preloaded and shown after the start button is clicked
         });
     </script>
 </body>
